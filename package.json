@@ -1,0 +1,46 @@
+{
+  "name": "nile",
+  "description": "Node Tile Server",
+  "homepage": "https://github.com/tualo/nile",
+  "main": "lib/main.js",
+  "bin": {
+    "nile": "./bin/nile"
+  },
+  "version": "0.0.1",
+  "engines": {
+    "node": ">=0.10.0"
+  },
+  "keywords": [
+    "gis",
+    "osm",
+    "tile"
+  ],
+  "author": [
+    {
+      "name": "Thomas Hoffmann",
+      "email": "thomas.hoffmann@tualo.de",
+      "url": "http://tualo.de/"
+    }
+  ],
+  "maintainers": [
+    {
+      "name": "Thomas Hoffmann",
+      "email": "thomas.hoffmann@tualo.de",
+      "url": "http://tualo.de/"
+    }
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/tualo/nile.git"
+  },
+  "readmeFilename": "README.md",
+  "dependencies": {
+    "colors": "0.6.2"
+  },
+  "devDependencies": {
+    "grunt": "~0.4.2",
+    "grunt-contrib-jshint": "~0.6.3",
+    "grunt-contrib-nodeunit": "~0.2.0",
+    "grunt-contrib-uglify": "~0.2.2"
+  }
+}

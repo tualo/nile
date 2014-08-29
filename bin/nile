@@ -1,0 +1,5 @@
+#!/usr/bin/env node
+var pjson = require('../package.json'),
+  server = require('../lib/main');
+
+server.startup();

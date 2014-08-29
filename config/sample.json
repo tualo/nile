@@ -1,0 +1,7 @@
+{
+  "database": "postgres://thomashoffmann@localhost/osm",
+  "http": {
+    "port": 9000,
+    "active": true
+  }
+}
