@@ -1,0 +1,21 @@
+path.primary {
+  stroke: black;
+  fill: none;
+  stroke-linejoin: round;
+  stroke-width: 3px;
+}
+
+path.secondary {
+  stroke: green;
+  stroke-width: 1px;
+  stroke-linejoin: round;
+  fill: none;
+}
+
+
+path.motorway {
+  stroke: yellow;
+  stroke-linejoin: round;
+  stroke-width: 5px;
+  fill: none;
+}

@@ -1,0 +1,20 @@
+highway.primary{
+  stroke: black;
+  fill: none;
+  stroke-linejoin: round;
+  stroke-width: 3px;
+}
+
+highway.secondary{
+  stroke: orange;
+  fill: none;
+  stroke-linejoin: round;
+  stroke-width: 3px;
+}
+
+highway.residential{
+  stroke: gray;
+  fill: none;
+  stroke-linejoin: round;
+  stroke-width: 3px;
+}

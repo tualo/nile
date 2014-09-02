@@ -1,37 +1,26 @@
 var EventEmitter = require('events').EventEmitter,
+fs = require('fs'),
+path = require('path'),
+css = require('css'),
+Entities = require('html-entities').AllHtmlEntities,
 utilities = require('./Utilities');
 
+entities = new Entities();
 
 
 var Tile = function(system){
   var self = this;
   self.system = system;
+  self._z = 8;
+  self._x = 0;
+  self._y = 0;
+  this._style = 'standard';
 
+  this.svg_ns = [
+  'xmlns="http://www.w3.org/2000/svg"',
+  'xmlns:xlink="http://www.w3.org/1999/xlink"'
+  ];
 
-  self.svgNameSpaces = [];
-  self.svgNameSpaces.push('xmlns="http://www.w3.org/2000/svg"');
-  self.svgNameSpaces.push('xmlns:xlink="http://www.w3.org/1999/xlink"');
-
-
-  //nur zum TEST dies sollte aus dem CSS der MAP geladen werden.
-  self.svgStyleSheet = {};
-  self.svgStyleSheet['highway'] = {};
-  self.svgStyleSheet['highway']['motorway'] = {
-    stroke: "#006600;",
-    fill:   "none;"
-  };
-  self.svgStyleSheet['highway']['primary'] = {
-    stroke: "#666600;",
-    fill:   "none;"
-  };
-  self.svgStyleSheet['highway']['secondary'] = {
-    stroke: "#555500;",
-    fill:   "none;"
-  };
-  self.svgStyleSheet['highway']['residential'] = {
-    stroke: "#446600;",
-    fill:   "none;"
-  };
 
 
   return self;
@@ -47,25 +36,36 @@ utilities.inherits(Tile, EventEmitter, {
   get base () { return this._base; },
   set base (v) { this._base = v; return this; },
 
+  get style () { return this._style; },
+  set style (v) { this._style = v; return this; },
+
   get x () { return this._x; },
-  set x (v) { this._x = v; return this; },
+  set x (v) {
+    this._x = v*1;
+    //this._updateBBox();
+    return this;
+  },
   get y () { return this._y; },
-  set y (v) { this._y = v; return this; },
+  set y (v) {
+    this._y = v*1;
+    //this._updateBBox();
+    return this;
+  },
   get z () { return this._z; },
-  set z (v) { this._z = v; return this; }
+  set z (v) {
+    this._z = v*1;
+    //this._updateBBox();
+    return this;
+  }
 
 });
 
 
-
-Tile.prototype.tile2long = function (x,z) {
-  return (x/Math.pow(2,z)*360-180);
+Tile.prototype._updateBBox = function(){
+  var self = this;
+  self.bbox = this.from4326To900913( this.getBbox());
 }
 
-Tile.prototype.tile2lat = function (y,z) {
-  var n=Math.PI-2*Math.PI*y/Math.pow(2,z);
-  return (180/Math.PI*Math.atan(0.5*(Math.exp(n)-Math.exp(-n))));
-}
 
 Tile.prototype.getDatabaseQuery = function(){
   var parts = [],
@@ -73,32 +73,36 @@ Tile.prototype.getDatabaseQuery = function(){
   column = this.column,
   values = this.values,
   base = this.base,
-  as = this.as;
+  as = this.as,
+  bbox = this.bbox;
 
-  var tileBox   = self.getBbox();
-  //  console.log(tileBox);
-  var bbox      = self.from4326To900913(tileBox);
   //  console.log(bbox);
   var tolerance = 0;
   var cond      = "";
 
   var t = "ST_SetSRID('BOX3D("+(bbox[0]-tolerance)+" "+(bbox[1]-tolerance)+","+(bbox[2]+tolerance)+" "+(bbox[3]+tolerance)+")'::box3d, 900913) "+cond+" ";
-  for(var i in values){
-    parts.push(
-      [
+
+  for(var j in base){
+
+    for(var i in values){
+      parts.push(
+        [
         'SELECT',
-          'osm_id,',
-          'name,',
-          column+',',
-          'ST_As'+as+'( ST_Transform( ST_Intersection( '+t+' ,way) ,4326) ) AS data',
+        ' \''+base[j]+'\' as qtype,',
+        'osm_id,',
+        'name,',
+        column+',',
+        'ST_As'+as+'( ST_Transform( ST_Intersection( '+t+' ,way) ,900913) ) AS data',
         'FROM',
-          'planet_osm_'+base+' ',
+        'planet_osm_'+base[j]+' ',
         'WHERE',
-          'ST_Intersects( way, '+t+' )  and ',
-          ''+column+'=\''+values[i]+'\' '
-      ].join(' ')
-    );
+        'ST_Intersects( way, '+t+' )  and ',
+        ''+column+'=\''+values[i]+'\' '
+        ].join(' ')
+      );
+    }
   }
+  console.log("Zoom: ",this.z, this.x,this.y ,parts.join(' UNION '));
   return parts.join(' UNION ');
 
 }
@@ -148,60 +152,137 @@ Tile.prototype.invertYAxe = function(data){
   }
 }
 
-Tile.prototype.queryAsSVG = function(callback,_svg,_columns,_index){
+Tile.prototype.getStyle = function(callback){
+  var styleFile = path.join(__dirname,'..','public','css','map',this.style,this.z+'.css'),
+  obj,
+  sel,
+  i,
+  def,
+  styles = {};
+  fs.readFile(styleFile,function(err,data){
+
+    if (err){
+      callback(err,null);
+    }else{
+      obj = css.parse(data.toString(), {});
+      for(i in obj.stylesheet.rules){
+        if (obj.stylesheet.rules[i].type === 'rule'){
+          if (obj.stylesheet.rules[i].selectors.length===1){
+            sel = obj.stylesheet.rules[i].selectors[0].split('.');
+            if (sel.length === 2){
+              column = sel[0];
+              value = sel[1];
+              def='';
+              for(j in obj.stylesheet.rules[i].declarations){
+                if (obj.stylesheet.rules[i].declarations[j].type === 'declaration'){
+                  def+= ' '+obj.stylesheet.rules[i].declarations[j].property+'="'+obj.stylesheet.rules[i].declarations[j].value+'"'+' ';
+                }
+              }
+              if (typeof styles[column]==='undefined'){
+                styles[column]={};
+              }
+              if (typeof styles[column][value]==='undefined'){
+                styles[column][value]='';
+              }
+              styles[column][value]+=def;
+            }
+            //console.log(obj.stylesheet.rules[i].declarations);
+          }
+        }
+      }
+      callback(false,styles);
+    }
+  });
+
+}
+
+Tile.prototype.queryAsSVG = function(callback,_svg,_columns,_index,_style){
   var column,
   self = this,
-  values=[];
+  values=[],
+  bbox = this.bbox,
+  transformBox = bbox;//self.from900913To4326(bbox);
 
   this.as = 'SVG';
 
 
+
   if (typeof _columns === 'undefined'){
-    _svg = [];
-    _svg.push("<svg "+self.svgNameSpaces.join(" ")+">");
+    var data = self.getStyle(function(err,data){
+      if (err){
+        _svg.push('<svg width="256px" height="256px" '+self.svg_ns.join(" ")+'>');
+        _svg.push('<rect x="1" y="1" w="254" h="254" fill="gray" opacity="0.5"/>'+"\n");
+        _svg.push("</svg>");
 
-    _svg.push('<style type="text/css" ><![CDATA['+"\n");
-    for(column in self.svgStyleSheet){
-      for(value in self.svgStyleSheet[column]){
-        values.push(value);
-        _svg.push('path.'+column+' .'+value+' '+JSON.stringify(self.svgStyleSheet[column][value])+"\n");
+        //console.log(_svg.join("\n"));
+        callback(false,_svg.join("\n"));
+        return;
+      }else{
+
+
+        _svg = [];
+        _svg.push('<svg width="512px" height="512px" '+self.svg_ns.join(" ")+'>');
+
+
+        //_svg.push('<defs><style>'+data.toString()+'</style></defs>'+"\n");
+        //_svg.push('<rect x="10" y="10" w="226" h="226" fill="none" stroke="black"/>'+"\n");
+
+
+        var x = transformBox[2] - transformBox[0];
+        var scale = 512/x;
+        _svg.push('<g transform="scale('+scale+' '+scale+')">');
+        _svg.push('<g transform="translate('+transformBox[0]*-1+','+transformBox[3]*1+')">');
+        _columns = [];
+        _index = 0;
+        _style = data;
+
+        for(column in _style){
+          _columns.push(column);
+        }
+        self.queryAsSVG(callback,_svg,_columns,_index,_style);
       }
-    }
-    _svg.push(']]></style>'+"\n");
+    });
 
-    _columns = [];
-    _index = 0;
-    for(column in self.svgStyleSheet){
-      _columns.push(column);
-    }
-  }
-
-  if (_index < _columns.length){
+  }else if (_index < _columns.length){
     column = _columns[_index];
-    for(value in self.svgStyleSheet[column]){
+    for(value in _style[column]){
       values.push(value);
     }
+
     self.values = values;
     self.column = column;
-    self.base = 'roads';
+    self.base = [ 'roads', 'line', 'polygon' ];
+
     this.query(function(err,result){
+
       if (err){
         callback(err,null);
       }else{
-        //console.log(result);
+        console.log(result);
         for(var i in result){
           if (result[i].data!=''){
-            _svg.push('<path class="'+column+' '+result[i][column]+'" d=\"'+result[i].data+'\" />');
+            _svg.push('<path id="'+result[i].osm_id+'" '+_style[column][result[i][column]]+' vector-effect="non-scaling-stroke" d=\"'+result[i].data+'\" />');
+            if (typeof result[i].name==='string'){
+              _svg.push('<text font-size = "40">');
+              _svg.push('<textPath xlink:href = "#'+result[i].osm_id+'">');
+              _svg.push('<![CDATA['+entities.encode(result[i].name)+']]>');
+              _svg.push('</textPath>');
+              _svg.push('</text>>');
+            }
           }
         }
-        self.queryAsSVG(callback,_svg,_columns,_index+1);
+        self.queryAsSVG(callback,_svg,_columns,_index+1,_style);
       }
 
     });
 
   }else{
     // return with callback
+    _svg.push('</g>');
+    _svg.push('</g>');
     _svg.push("</svg>");
+
+    //console.log(_svg.join("\n"));
     callback(false,_svg.join("\n"));
 
   }
@@ -231,24 +312,7 @@ Tile.prototype.query = function(callback){
     }
 
 
-
-        /*
-        var content = {};
-        content.features = [];
-        content.features = self.getJSONFeatures(results);
-        if (!content.features){
-        content.features = []; //new Array();
-      }
-      //content.granularity = configuration.intscalefactor;
-      content.bbox = bbox;
-      client.end();
-
-      self.invertYAxe(content);
-      //self.data = content;
-
-      callback(false, content);
-      */
-    });
+  });
 }
 
 Tile.prototype.getBbox = function(){
@@ -336,6 +400,7 @@ Tile.prototype.tanh = function(i){
 Tile.prototype.rad2deg = function(angle){
   return angle/(Math.PI/180.0);
 }
+
 
 Tile.prototype.long2tile = function(lon,zoom) {
   return (Math.floor((lon+180)/360*Math.pow(2,zoom)));
