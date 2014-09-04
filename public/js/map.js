@@ -1,6 +1,7 @@
 var map = new ol.Map({
   target: 'map',
   layers: [
+/*
   new ol.layer.Tile({
     source: new ol.source.OSM({
       attributions: [
@@ -13,15 +14,18 @@ var map = new ol.Map({
       url: 'http://a.tile.openstreetmap.org/{z}/{x}/{y}.png'
     })
   }),
+*/
   new ol.layer.Tile({
-    source: new ol.source.XYZ({url: './map/{z}/{x}/{y}.png'})
+    source: new ol.source.XYZ({url: './live/{z}/{x}/{y}.png'})
   })
   ],
   view: new ol.View({
-    center: [ 50.973610598531593,10.959229523117047],
+    //center: ol.proj.transform([50.973610598531593,10.959229523117047], 'EPSG:4326', 'EPSG:3857'),
+    center: [1261083.16,6676704.74],
+//    center: new ol.LonLat( 50.973610598531593,10.959229523117047 ),
     projection: 'EPSG:3857',
-    zoom: 5,
-    maxZoom: 16,
+    zoom: 15,
+    maxZoom: 23,
     minZoom: 0
   })
 

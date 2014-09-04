@@ -1,11 +1,10 @@
 var EventEmitter = require('events').EventEmitter,
-fs = require('fs'),
-path = require('path'),
-css = require('css'),
-Entities = require('html-entities').AllHtmlEntities,
-utilities = require('./Utilities');
+  fs = require('fs'),
+  path = require('path'),
+  utilities = require('./Utilities'),
+  mkdirp = require('mkdirp'),
+  Kothic =  require('node-kothic').Kothic;
 
-entities = new Entities();
 
 
 var Tile = function(system){
@@ -14,14 +13,7 @@ var Tile = function(system){
   self._z = 8;
   self._x = 0;
   self._y = 0;
-  this._style = 'standard';
-
-  this.svg_ns = [
-  'xmlns="http://www.w3.org/2000/svg"',
-  'xmlns:xlink="http://www.w3.org/1999/xlink"'
-  ];
-
-
+  self._tileSize = 256;
 
   return self;
 }
@@ -76,34 +68,70 @@ Tile.prototype.getDatabaseQuery = function(){
   as = this.as,
   bbox = this.bbox;
 
-  //  console.log(bbox);
   var tolerance = 0;
+  var granularity  = 10000;
   var cond      = "";
+
+  var xfactor = (granularity/(bbox[2]-bbox[0]));
+  var yfactor = (granularity/(bbox[3]-bbox[1]));
+  var deltaX = bbox[0]*-1;
+  var deltaY = bbox[1]*-1;
+
 
   var t = "ST_SetSRID('BOX3D("+(bbox[0]-tolerance)+" "+(bbox[1]-tolerance)+","+(bbox[2]+tolerance)+" "+(bbox[3]+tolerance)+")'::box3d, 900913) "+cond+" ";
 
   for(var j in base){
+    parts.push(
+      [
+      'SELECT',
 
+      'planet_osm_'+base[j]+'.* ,',
+
+      'ST_As'+as+'( ',
+      'ST_Affine( ',
+      'ST_Transform( ST_Intersection( '+t+' ,way) ,900913), ',
+      xfactor+', 0, 0, 0,',
+      yfactor+', 0, 0, 0, 1, ',
+      (deltaX * xfactor)+',',
+      (deltaY * yfactor)+', 0 ',
+      ' )',
+      ') AS data, ',
+      'ST_As'+as+'( ',
+      ' ST_Affine( ',
+      'ST_ForceRHR(ST_PointOnSurface(way)), ',
+      xfactor+', 0, 0, 0,',
+      yfactor+', 0, 0, 0, 1, ',
+      (deltaX * xfactor)+',',
+      (deltaY * yfactor)+', 0 ',
+      ' ) ',
+      ') AS reprpoint',
+      'FROM',
+      'planet_osm_'+base[j]+' ',
+      'WHERE',
+      'ST_Intersects( way, '+t+' )   ',
+      //' and '+column+'=\''+values[i]+'\' '
+      ].join(' ')
+    );
+    /*
     for(var i in values){
-      parts.push(
-        [
-        'SELECT',
-        ' \''+base[j]+'\' as qtype,',
-        'osm_id,',
-        'name,',
-        column+',',
-        'ST_As'+as+'( ST_Transform( ST_Intersection( '+t+' ,way) ,900913) ) AS data',
-        'FROM',
-        'planet_osm_'+base[j]+' ',
-        'WHERE',
-        'ST_Intersects( way, '+t+' )  and ',
-        ''+column+'=\''+values[i]+'\' '
-        ].join(' ')
-      );
-    }
-  }
-  console.log("Zoom: ",this.z, this.x,this.y ,parts.join(' UNION '));
-  return parts.join(' UNION ');
+    parts.push(
+    [
+    'SELECT',
+
+    'planet_osm_'+base[j]+'.*'
+
+    'ST_As'+as+'( ST_Transform( ST_Intersection( '+t+' ,way) ,900913) ) AS data',
+    'FROM',
+    'planet_osm_'+base[j]+' ',
+    'WHERE',
+    'ST_Intersects( way, '+t+' )   ',
+    //' and '+column+'=\''+values[i]+'\' '
+    ].join(' ')
+  );
+}
+*/
+}
+return parts.join(' UNION ');
 
 }
 
@@ -150,147 +178,48 @@ Tile.prototype.invertYAxe = function(data){
       feature.reprpoint[1] = tileSize - feature.reprpoint[1];
     }
   }
-}
-
-Tile.prototype.getStyle = function(callback){
-  var styleFile = path.join(__dirname,'..','public','css','map',this.style,this.z+'.css'),
-  obj,
-  sel,
-  i,
-  def,
-  styles = {};
-  fs.readFile(styleFile,function(err,data){
-
-    if (err){
-      callback(err,null);
-    }else{
-      obj = css.parse(data.toString(), {});
-      for(i in obj.stylesheet.rules){
-        if (obj.stylesheet.rules[i].type === 'rule'){
-          if (obj.stylesheet.rules[i].selectors.length===1){
-            sel = obj.stylesheet.rules[i].selectors[0].split('.');
-            if (sel.length === 2){
-              column = sel[0];
-              value = sel[1];
-              def='';
-              for(j in obj.stylesheet.rules[i].declarations){
-                if (obj.stylesheet.rules[i].declarations[j].type === 'declaration'){
-                  def+= ' '+obj.stylesheet.rules[i].declarations[j].property+'="'+obj.stylesheet.rules[i].declarations[j].value+'"'+' ';
-                }
-              }
-              if (typeof styles[column]==='undefined'){
-                styles[column]={};
-              }
-              if (typeof styles[column][value]==='undefined'){
-                styles[column][value]='';
-              }
-              styles[column][value]+=def;
-            }
-            //console.log(obj.stylesheet.rules[i].declarations);
-          }
-        }
-      }
-      callback(false,styles);
-    }
-  });
-
-}
-
-Tile.prototype.queryAsSVG = function(callback,_svg,_columns,_index,_style){
-  var column,
-  self = this,
-  values=[],
-  bbox = this.bbox,
-  transformBox = bbox;//self.from900913To4326(bbox);
-
-  this.as = 'SVG';
-
-
-
-  if (typeof _columns === 'undefined'){
-    var data = self.getStyle(function(err,data){
-      if (err){
-        _svg.push('<svg width="256px" height="256px" '+self.svg_ns.join(" ")+'>');
-        _svg.push('<rect x="1" y="1" w="254" h="254" fill="gray" opacity="0.5"/>'+"\n");
-        _svg.push("</svg>");
-
-        //console.log(_svg.join("\n"));
-        callback(false,_svg.join("\n"));
-        return;
-      }else{
-
-
-        _svg = [];
-        _svg.push('<svg width="512px" height="512px" '+self.svg_ns.join(" ")+'>');
-
-
-        //_svg.push('<defs><style>'+data.toString()+'</style></defs>'+"\n");
-        //_svg.push('<rect x="10" y="10" w="226" h="226" fill="none" stroke="black"/>'+"\n");
-
-
-        var x = transformBox[2] - transformBox[0];
-        var scale = 512/x;
-        _svg.push('<g transform="scale('+scale+' '+scale+')">');
-        _svg.push('<g transform="translate('+transformBox[0]*-1+','+transformBox[3]*1+')">');
-        _columns = [];
-        _index = 0;
-        _style = data;
-
-        for(column in _style){
-          _columns.push(column);
-        }
-        self.queryAsSVG(callback,_svg,_columns,_index,_style);
-      }
-    });
-
-  }else if (_index < _columns.length){
-    column = _columns[_index];
-    for(value in _style[column]){
-      values.push(value);
-    }
-
-    self.values = values;
-    self.column = column;
-    self.base = [ 'roads', 'line', 'polygon' ];
-
-    this.query(function(err,result){
-
-      if (err){
-        callback(err,null);
-      }else{
-        console.log(result);
-        for(var i in result){
-          if (result[i].data!=''){
-            _svg.push('<path id="'+result[i].osm_id+'" '+_style[column][result[i][column]]+' vector-effect="non-scaling-stroke" d=\"'+result[i].data+'\" />');
-            if (typeof result[i].name==='string'){
-              _svg.push('<text font-size = "40">');
-              _svg.push('<textPath xlink:href = "#'+result[i].osm_id+'">');
-              _svg.push('<![CDATA['+entities.encode(result[i].name)+']]>');
-              _svg.push('</textPath>');
-              _svg.push('</text>>');
-            }
-          }
-        }
-        self.queryAsSVG(callback,_svg,_columns,_index+1,_style);
-      }
-
-    });
-
-  }else{
-    // return with callback
-    _svg.push('</g>');
-    _svg.push('</g>');
-    _svg.push("</svg>");
-
-    //console.log(_svg.join("\n"));
-    callback(false,_svg.join("\n"));
-
-  }
+  return data;
 }
 
 Tile.prototype.queryAsGeoJSON = function(callback){
+  var data,i,json,field,self=this;
   this.as = 'GeoJSON';
-  this.query(callback);
+  this.base = ['roads','line','polygon'];
+  this.query(function(err,result){
+    if (err){
+      callback(err,null);
+    }else{
+      data = {
+        features: [],
+        granularity: 10000,
+        bbox: self.from900913To4326(self.bbox)
+      };
+      for(i=0;i<result.length;i++){
+
+        json = JSON.parse(result[i].data);
+        json.properties = {};
+        for(field in result[i]){
+          if (
+            (field!=='data')||
+            (field!=='way')||
+            (field!=='reprpoint')
+          ){
+            if (typeof result[i][field]==='string'){
+              json.properties[field] = result[i][field];
+            }
+          }
+          if (field==='reprpoint'){
+            if (typeof result[i].reprpoint==='string'){
+              json.reprpoint = (JSON.parse(result[i].reprpoint) ).coordinates;
+            }
+          }
+        }
+        data.features.push(json);
+      }
+
+      callback(false,self.invertYAxe(data));
+    }
+  });
 }
 
 
@@ -298,14 +227,12 @@ Tile.prototype.query = function(callback){
   var self = this,
   client = self.system.client,
   sql='';
-
   sql = self.getDatabaseQuery();
-  self.system.logger.log('debug',sql);
-  //console.log(sql);
+  //self.system.logger.log('debug',sql);
   client.query(sql, function(err, results){
 
     if (err){
-      console.log(err);
+      self.system.logger.log('error',err);
       callback(err, null);
     }else{
       callback(false, results.rows);
@@ -409,5 +336,40 @@ Tile.prototype.long2tile = function(lon,zoom) {
 Tile.prototype.lat2tile = function(lat,zoom)  {
   return (Math.floor((1-Math.log(Math.tan(lat*Math.PI/180) + 1/Math.cos(lat*Math.PI/180))/Math.PI)/2 *Math.pow(2,zoom)));
 }
+
+
+var route = function(system,style,zoom,x,y){
+
+  return function(req,res,next){
+    var tile = new Tile(system),
+    image_path = path.join(__dirname,'..','public','map',req.params.zoom,req.params.x)
+    output = path.join(image_path,req.params.y+'.png');
+    tile.z = zoom;
+    tile.x = x;
+    tile.y = y;
+    tile._updateBBox();
+    mkdirp(image_path, function (err) {
+      if (err){
+        console.error(err);
+        next();
+      }else{
+        tile.queryAsGeoJSON(function(err,data){
+          var kothic = new Kothic(1);
+          kothic.importStyle(path.join(__dirname,'..','styles',style));
+          kothic.setOptions({
+            styles: [style]
+          });
+          kothic.setZoom(req.params.zoom);
+          kothic.setGeoJSON(data);
+          kothic.run(output,function(){
+            res.sendFile(output);
+          });
+        });
+      }
+    });
+  }
+}
+
+exports.route = route;
 
 exports.Tile = Tile;
