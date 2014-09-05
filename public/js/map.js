@@ -26,7 +26,7 @@ var map = new ol.Map({
     projection: 'EPSG:3857',
     zoom: 15,
     maxZoom: 23,
-    minZoom: 0
+    minZoom: 10
   })
 
 });

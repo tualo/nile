@@ -59,7 +59,57 @@ Tile.prototype._updateBBox = function(){
 }
 
 
+Tile.prototype.sqlQuery = function(name){
+  var pxtolerance = 1.8;
+  var buffer = this.pixelSizeAtZoom(pxtolerance);
+  var way_area = (Math.pow(buffer, 2)/ pxtolerance );
+  var way_area_buffer = Math.pow(buffer, 2);
+  var cond = '';
+  var way_column = 'way';
+  var prefix = 'planet_osm';
+  var parts = [],
+    self = this,
+    column = this.column,
+    values = this.values,
+    base = this.base,
+    as = this.as,
+    bbox = this.bbox;
+  var tolerance = 0;
+  var granularity  = 10000;
+  var cond      = "";
+  var xfactor = (granularity/(bbox[2]-bbox[0]));
+  var yfactor = (granularity/(bbox[3]-bbox[1]));
+  var deltaX = bbox[0]*-1;
+  var deltaY = bbox[1]*-1;
+  var transscale = ''+(-bbox[0])+', '+(-bbox[1])+', '+granularity/(bbox[2]-bbox[0])+', '+granularity/(bbox[3]-bbox[1])+'';
+  var srid = "ST_SetSRID('BOX3D("+(bbox[0]-tolerance)+" "+(bbox[1]-tolerance)+","+(bbox[2]+tolerance)+" "+(bbox[3]+tolerance)+")'::box3d, 900913) "+cond+" ";
+  var sql = ( fs.readFileSync( path.join(__dirname,'sqls',name+'.sql') )).toString() ;
+  sql = sql.replace(/\#\#way_area_buffer/g,way_area_buffer);
+  sql = sql.replace(/\#\#way_area/g,way_area);
+  sql = sql.replace(/\#\#way_column/g,way_column);
+  sql = sql.replace(/\#\#cond/g,cond);
+  sql = sql.replace(/\#\#srid/g,srid);
+  sql = sql.replace(/\#\#buffer/g,buffer);
+  sql = sql.replace(/\#\#transscale/g,transscale);
+  sql = sql.replace(/\#\#prefix/g,prefix);
+  return sql;
+}
+
 Tile.prototype.getDatabaseQuery = function(){
+  var sql = [
+    this.sqlQuery('polygon'),
+    this.sqlQuery('line'),
+    this.sqlQuery('point')
+  ];
+  //sql.push(this.__getDatabaseQuery());
+  return sql.join(' UNION ');//+' LIMIT 100000';
+}
+
+
+Tile.prototype.__getDatabaseQuery = function(){
+  console.log(this.sqlQuery('polygon'));
+  console.log(this.sqlQuery('line'));
+
   var parts = [],
   self = this,
   column = this.column,
@@ -89,7 +139,11 @@ Tile.prototype.getDatabaseQuery = function(){
 
       'ST_As'+as+'( ',
       'ST_Affine( ',
-      'ST_Transform( ST_Intersection( '+t+' ,way) ,900913), ',
+      'ST_Transform( ',
+      ' ST_ForceRHR(  ',
+        'ST_Intersection( '+t+' ,way)',
+      ' ) ',
+      ' ,900913), ',
       xfactor+', 0, 0, 0,',
       yfactor+', 0, 0, 0, 1, ',
       (deltaX * xfactor)+',',
@@ -112,25 +166,8 @@ Tile.prototype.getDatabaseQuery = function(){
       //' and '+column+'=\''+values[i]+'\' '
       ].join(' ')
     );
-    /*
-    for(var i in values){
-    parts.push(
-    [
-    'SELECT',
-
-    'planet_osm_'+base[j]+'.*'
-
-    'ST_As'+as+'( ST_Transform( ST_Intersection( '+t+' ,way) ,900913) ) AS data',
-    'FROM',
-    'planet_osm_'+base[j]+' ',
-    'WHERE',
-    'ST_Intersects( way, '+t+' )   ',
-    //' and '+column+'=\''+values[i]+'\' '
-    ].join(' ')
-  );
 }
-*/
-}
+//console.log( parts.join(' UNION ') );
 return parts.join(' UNION ');
 
 }
@@ -144,7 +181,6 @@ Tile.prototype.invertYAxe = function(data){
   k,
   l,
   feature;
-
   for (i = 0; i < data.features.length; i++){
     feature = data.features[i];
     coordinates = feature.coordinates;
@@ -171,7 +207,7 @@ Tile.prototype.invertYAxe = function(data){
       }
 
     }else{
-      throw "Unexpected GeoJSON type: " + type;
+      //throw "Unexpected GeoJSON type: " + type;
     }
 
     if (feature.hasOwnProperty('reprpoint')){
@@ -197,27 +233,43 @@ Tile.prototype.queryAsGeoJSON = function(callback){
       for(i=0;i<result.length;i++){
 
         json = JSON.parse(result[i].data);
-        json.properties = {};
-        for(field in result[i]){
-          if (
-            (field!=='data')||
-            (field!=='way')||
-            (field!=='reprpoint')
-          ){
-            if (typeof result[i][field]==='string'){
-              json.properties[field] = result[i][field];
+        //console.log(result[i]);
+        //console.log(result[i].tags);
+
+        if (
+          (typeof result[i].tags==='string')
+           && (result[i].tags!=='')
+           && (result[i].tags.substr(0,1)==='{')
+        ){
+          //console.log(JSON.parse(result[i].tags));
+          var p = JSON.parse(result[i].tags);
+
+          json.properties = p;
+        }else{
+
+          //console.log(result[i].tags);
+          // there is not tags column so we have to build the tags
+          json.properties = {};
+          for(field in result[i]){
+            if (
+              (field !== 'data') ||
+              (field !== 'way') ||
+              (field !== 'reprpoint')
+            ){
+              if (typeof result[i][field]==='string'){
+                json.properties[field] = result[i][field];
+              }
             }
-          }
-          if (field==='reprpoint'){
-            if (typeof result[i].reprpoint==='string'){
-              json.reprpoint = (JSON.parse(result[i].reprpoint) ).coordinates;
+            if (field==='reprpoint'){
+              if (typeof result[i].reprpoint==='string'){
+                json.reprpoint = (JSON.parse(result[i].reprpoint) ).coordinates;
+              }
             }
           }
         }
         data.features.push(json);
       }
-
-      callback(false,self.invertYAxe(data));
+      callback(false, self.invertYAxe(data));
     }
   });
 }
@@ -228,7 +280,7 @@ Tile.prototype.query = function(callback){
   client = self.system.client,
   sql='';
   sql = self.getDatabaseQuery();
-  //self.system.logger.log('debug',sql);
+  self.system.logger.log('debug',sql);
   client.query(sql, function(err, results){
 
     if (err){
@@ -240,6 +292,7 @@ Tile.prototype.query = function(callback){
 
 
   });
+
 }
 
 Tile.prototype.getBbox = function(){
@@ -354,11 +407,24 @@ var route = function(system,style,zoom,x,y){
         next();
       }else{
         tile.queryAsGeoJSON(function(err,data){
-          var kothic = new Kothic(1);
-          kothic.importStyle(path.join(__dirname,'..','styles',style));
-          kothic.setOptions({
-            styles: [style]
-          });
+          var kothic;
+//console.log(JSON.stringify(data,null,4));
+          if (typeof system.cachedStyles[style]==='undefined'){
+            system.cachedStyles[style] = new Kothic(1);
+  //          kothic.importStyle(path.join(__dirname,'..','styles',style));
+            system.cachedStyles[style].importStyle(
+              path.join(__dirname,'..','styles',style),
+              path.join(__dirname,'..','styles','osmosnimki.png')
+            );
+
+            system.cachedStyles[style].setOptions({
+              styles: [style]
+            });
+
+          }
+
+
+          kothic = system.cachedStyles[style];
           kothic.setZoom(req.params.zoom);
           kothic.setGeoJSON(data);
           kothic.run(output,function(){

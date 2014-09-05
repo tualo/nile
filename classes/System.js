@@ -19,7 +19,7 @@ var System = function(){
       }
     }
   };
-
+  self._cached_styles = {};
   return self;
 }
 
@@ -32,6 +32,11 @@ utilities.inherits(System, EventEmitter, {
 
   get app () { return this._app; },
   set app (v) { this._app = v; return this; },
+
+  get cachedStyles () { return this._cached_styles; },
+  set cachedStyles (v) { this._cached_styles = v; return this; },
+
+
 });
 
 
@@ -74,6 +79,7 @@ System.prototype.startHTTPService = function(){
   self.app.route('/').get(function(req,res,next){
     return res.render('index',{});
   });
+
   self.app.route('/map/:zoom/:x/:y.png').get(function(req,res,next){
     Tiles.route(self,'osmosnimki',req.params.zoom,req.params.x,req.params.y)(req,res,next);
   });
