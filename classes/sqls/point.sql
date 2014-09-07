@@ -2,7 +2,8 @@ SELECT
   ST_AsGeoJSON(
       ST_TransScale(##way_column, ##transscale),
       0
-  ) AS ##way_column,
+  ) AS data,
+z_order,
   hstore2json(tags) AS tags,
   Null AS reprpoint
 FROM
