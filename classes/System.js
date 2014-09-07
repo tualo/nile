@@ -3,9 +3,10 @@ var EventEmitter = require('events').EventEmitter,
     pg = require('pg'),
     fs = require('fs'),
     path = require('path'),
+    MapCSS = require('node-kothic').MapCSS,
     Tiles = require('./Tile'),
-    express = require('express');
-
+    express = require('express'),
+    glob = require("glob");
 
 var System = function(){
   var self = this;
@@ -19,7 +20,8 @@ var System = function(){
       }
     }
   };
-  self._cached_styles = {};
+  self._mapcss = new MapCSS();
+
   return self;
 }
 
@@ -33,8 +35,8 @@ utilities.inherits(System, EventEmitter, {
   get app () { return this._app; },
   set app (v) { this._app = v; return this; },
 
-  get cachedStyles () { return this._cached_styles; },
-  set cachedStyles (v) { this._cached_styles = v; return this; },
+  get mapCSS () { return this._mapcss; },
+  set mapCSS (v) { this._mapcss = v; return this; },
 
 
 });
@@ -49,10 +51,27 @@ System.prototype.startService = function(){
       self.logger.log('error','DB problems',err);
       process.exit();
     }else{
-
-      self.startHTTPService();
+      self.styles(function(){
+        self.startHTTPService();
+      });
     }
   });
+}
+
+System.prototype.styles = function(callback){
+  var styleName,dirName,self = this;
+  glob( path.join(__dirname,'..','styles','*.js'), function (er, files) {
+    for(i=0;i<files.length;i++){
+      dirName = path.dirname(files[i]);
+      styleName = path.basename(files[i],'.js');
+      require(path.join(dirName,styleName)).style(self.mapCSS);
+      if (fs.existsSync(path.join(dirName,styleName,'.png'))){
+        this.mapcss.preloadSpriteImage(styleName,path.join(dirName,styleName,'.png'));
+      }
+    }
+//    self._mapcss.importStyle()
+  });
+  callback();
 }
 
 System.prototype.connect = function(callback){
@@ -80,12 +99,13 @@ System.prototype.startHTTPService = function(){
     return res.render('index',{});
   });
 
+/*
   self.app.route('/map/:zoom/:x/:y.png').get(function(req,res,next){
     Tiles.route(self,'osmosnimki',req.params.zoom,req.params.x,req.params.y)(req,res,next);
   });
-
-  self.app.route('/live/:zoom/:x/:y.png').get(function(req,res,next){
-    Tiles.route(self,'osmosnimki',req.params.zoom,req.params.x,req.params.y)(req,res,next);
+*/
+  self.app.route('/live/:style/:zoom/:x/:y.png').get(function(req,res,next){
+    Tiles.route(self,req.params.style,req.params.zoom,req.params.x,req.params.y)(req,res,next);
   });
 
   if ( (typeof this.config.http!='undefined') && (this.config.http.active == true)){
@@ -104,5 +124,7 @@ System.prototype.middleware = function(){
     next();
   }
 }
+
+
 
 exports.System = System;

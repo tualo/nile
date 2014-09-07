@@ -1,9 +1,23 @@
 var EventEmitter = require('events').EventEmitter,
-  fs = require('fs'),
-  path = require('path'),
-  utilities = require('./Utilities'),
-  mkdirp = require('mkdirp'),
-  Kothic =  require('node-kothic').Kothic;
+fs = require('fs'),
+path = require('path'),
+utilities = require('./Utilities'),
+mkdirp = require('mkdirp'),
+Kothic =  require('node-kothic').Kothic;
+
+var conditions = [
+  "AND (tags->'usage'='main')",
+	"AND (tags->'usage'='main')",
+	"AND (tags->'usage'='main')",
+	"AND (tags->'usage'='main')",
+	"AND (tags->'usage'='main')",
+	"AND (tags->'usage'='main')",
+	"AND (tags->'usage'='main')",
+	"AND (tags->'usage'='main')",
+	"AND ((tags->'usage'='main') OR (tags->'usage'='branch'))",
+	"AND ((tags->'usage'='main') OR (tags->'usage'='branch') OR (tags->'railway'='disused') OR (tags->'railway'='abandoned') OR (tags->'railway'='proposed') OR (tags->'railway'='construction') OR (tags->'railway'='station') OR (tags->'railway'='narrow_gauge'))",
+	"AND ((tags->'railway'='rail') OR (tags->'railway'='disused') OR (tags->'railway'='abandoned') OR (tags->'railway'='proposed') OR (tags->'railway'='construction') OR (tags->'railway'='light_rail') OR (tags->'railway'='tram') OR (tags->'railway'='subway') OR (tags->'railway'='narrow_gauge') OR (tags->'railway'='station') OR (tags->'railway'='halt'))"
+];
 
 
 
@@ -68,12 +82,12 @@ Tile.prototype.sqlQuery = function(name){
   var way_column = 'way';
   var prefix = 'planet_osm';
   var parts = [],
-    self = this,
-    column = this.column,
-    values = this.values,
-    base = this.base,
-    as = this.as,
-    bbox = this.bbox;
+  self = this,
+  column = this.column,
+  values = this.values,
+  base = this.base,
+  as = this.as,
+  bbox = this.bbox;
   var tolerance = 0;
   var granularity  = 10000;
   var cond      = "";
@@ -84,6 +98,11 @@ Tile.prototype.sqlQuery = function(name){
   var transscale = ''+(-bbox[0])+', '+(-bbox[1])+', '+granularity/(bbox[2]-bbox[0])+', '+granularity/(bbox[3]-bbox[1])+'';
   var srid = "ST_SetSRID('BOX3D("+(bbox[0]-tolerance)+" "+(bbox[1]-tolerance)+","+(bbox[2]+tolerance)+" "+(bbox[3]+tolerance)+")'::box3d, 900913) "+cond+" ";
   var sql = ( fs.readFileSync( path.join(__dirname,'sqls',name+'.sql') )).toString() ;
+
+  if (typeof conditions[self.z*1] === 'string'){
+    cond = conditions[self.z*1];
+  }
+
   sql = sql.replace(/\#\#way_area_buffer/g,way_area_buffer);
   sql = sql.replace(/\#\#way_area/g,way_area);
   sql = sql.replace(/\#\#way_column/g,way_column);
@@ -97,18 +116,16 @@ Tile.prototype.sqlQuery = function(name){
 
 Tile.prototype.getDatabaseQuery = function(){
   var sql = [
-    this.sqlQuery('polygon'),
-    this.sqlQuery('line'),
-    this.sqlQuery('point')
+  this.sqlQuery('polygon'),
+  this.sqlQuery('line'),
+  this.sqlQuery('point')
   ];
   //sql.push(this.__getDatabaseQuery());
-  return sql.join(' UNION ');//+' LIMIT 100000';
+  return sql.join(' UNION ') + '  LIMIT 100000';
 }
 
 
 Tile.prototype.__getDatabaseQuery = function(){
-  console.log(this.sqlQuery('polygon'));
-  console.log(this.sqlQuery('line'));
 
   var parts = [],
   self = this,
@@ -141,7 +158,7 @@ Tile.prototype.__getDatabaseQuery = function(){
       'ST_Affine( ',
       'ST_Transform( ',
       ' ST_ForceRHR(  ',
-        'ST_Intersection( '+t+' ,way)',
+      'ST_Intersection( '+t+' ,way)',
       ' ) ',
       ' ,900913), ',
       xfactor+', 0, 0, 0,',
@@ -166,9 +183,8 @@ Tile.prototype.__getDatabaseQuery = function(){
       //' and '+column+'=\''+values[i]+'\' '
       ].join(' ')
     );
-}
-//console.log( parts.join(' UNION ') );
-return parts.join(' UNION ');
+  }
+  return parts.join(' UNION ');
 
 }
 
@@ -207,6 +223,7 @@ Tile.prototype.invertYAxe = function(data){
       }
 
     }else{
+      this.logger.log('warn',"Unexpected GeoJSON type: " + type);
       //throw "Unexpected GeoJSON type: " + type;
     }
 
@@ -233,22 +250,17 @@ Tile.prototype.queryAsGeoJSON = function(callback){
       for(i=0;i<result.length;i++){
 
         json = JSON.parse(result[i].data);
-        //console.log(result[i]);
-        //console.log(result[i].tags);
-
         if (
           (typeof result[i].tags==='string')
-           && (result[i].tags!=='')
-           && (result[i].tags.substr(0,1)==='{')
+          && (result[i].tags!=='')
+          && (result[i].tags.substr(0,1)==='{')
         ){
-          //console.log(JSON.parse(result[i].tags));
           var p = JSON.parse(result[i].tags);
 
           json.properties = p;
         }else{
 
-          //console.log(result[i].tags);
-          // there is not tags column so we have to build the tags
+          /// there is not tags column so we have to build the tags
           json.properties = {};
           for(field in result[i]){
             if (
@@ -280,7 +292,7 @@ Tile.prototype.query = function(callback){
   client = self.system.client,
   sql='';
   sql = self.getDatabaseQuery();
-  self.system.logger.log('debug',sql);
+  //self.system.logger.log('debug',sql);
   client.query(sql, function(err, results){
 
     if (err){
@@ -397,6 +409,7 @@ var route = function(system,style,zoom,x,y){
     var tile = new Tile(system),
     image_path = path.join(__dirname,'..','public','map',req.params.zoom,req.params.x)
     output = path.join(image_path,req.params.y+'.png');
+
     tile.z = zoom;
     tile.x = x;
     tile.y = y;
@@ -406,30 +419,25 @@ var route = function(system,style,zoom,x,y){
         console.error(err);
         next();
       }else{
+
+
         tile.queryAsGeoJSON(function(err,data){
           var kothic;
-//console.log(JSON.stringify(data,null,4));
-          if (typeof system.cachedStyles[style]==='undefined'){
-            system.cachedStyles[style] = new Kothic(1);
-  //          kothic.importStyle(path.join(__dirname,'..','styles',style));
-            system.cachedStyles[style].importStyle(
-              path.join(__dirname,'..','styles',style),
-              path.join(__dirname,'..','styles','osmosnimki.png')
-            );
 
-            system.cachedStyles[style].setOptions({
-              styles: [style]
-            });
+          fs.writeFile(path.join(image_path,req.params.y+'.geojson'),JSON.stringify(data,null,4),function(err){
 
-          }
+          });
 
-
-          kothic = system.cachedStyles[style];
+          kothic = new Kothic(1,system.mapCSS);
+          kothic.setOptions({
+            styles: [style]
+          });
           kothic.setZoom(req.params.zoom);
           kothic.setGeoJSON(data);
           kothic.run(output,function(){
             res.sendFile(output);
           });
+
         });
       }
     });

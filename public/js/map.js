@@ -15,13 +15,23 @@ var map = new ol.Map({
     })
   }),
 */
+/*
   new ol.layer.Tile({
-    source: new ol.source.XYZ({url: './live/{z}/{x}/{y}.png'})
-  })
+    source: new ol.source.XYZ({url: './live/osmosnimki/{z}/{x}/{y}.png'})
+  }),
+*/
+  new ol.layer.Tile({
+    source: new ol.source.XYZ({url: './live/mapnik/{z}/{x}/{y}.png'})
+  }),
+/*
+  new ol.layer.Tile({
+    source: new ol.source.XYZ({url: './live/surface/{z}/{x}/{y}.png'})
+  }),
+*/
   ],
   view: new ol.View({
     //center: ol.proj.transform([50.973610598531593,10.959229523117047], 'EPSG:4326', 'EPSG:3857'),
-    center: [1261083.16,6676704.74],
+    center: [1229413.1629387736,6616694.916475148],
 //    center: new ol.LonLat( 50.973610598531593,10.959229523117047 ),
     projection: 'EPSG:3857',
     zoom: 15,
