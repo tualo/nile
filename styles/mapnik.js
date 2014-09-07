@@ -7847,4 +7847,5 @@ exports.style = function (MapCSS) {
 
     MapCSS.loadStyle('mapnik', restyle, sprite_images, external_images, presence_tags, value_tags);
     MapCSS.preloadExternalImages('mapnik');
+    
 }

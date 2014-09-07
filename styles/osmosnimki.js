@@ -5,8 +5,11 @@ exports.style = function (MapCSS) {
     function restyle(style, tags, zoom, type, selector) {
         var s_default = {}, s_centerline = {}, s_ticks = {}, s_label = {};
 
+        //console.log(arguments);
+        //zoom*=1;
+
         if ((selector === 'canvas')) {
-            s_default['fill-color'] = '#C4D4F5';
+            s_default['fill-color'] = '#fcf8e4';// '#C4D4F5';
         }
 
         if (((selector === 'area' && tags['natural'] === 'coastline'))) {
