@@ -3,3 +3,4 @@
 *.svg
 public/map/*
 .DS_Store
+styles/instructions/*
