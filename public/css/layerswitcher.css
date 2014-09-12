@@ -1,0 +1,29 @@
+.ol-layerswitcher{
+  position: absolute;
+  padding: 5px;
+  right: .5em;
+  top: 2em;
+  background-color: #fff;
+  background-color: rgba(255,255,255,.65);
+  border-radius: 2px;
+}
+.ol-layerswitcher h1{
+  font-family: 'Lucida Grande',Verdana,Geneva,Lucida,Arial,Helvetica,sans-serif;
+  font-size: 0.7em;
+}
+.ol-layerswitcher p{
+  padding: 5px;
+  margin: 1px;
+  color: white;
+  font-family: 'Lucida Grande',Verdana,Geneva,Lucida,Arial,Helvetica,sans-serif;
+  font-size: 0.7em;
+  background-color: #7b98bc;
+  background-color: rgba(0,60,136,.5);
+  border-radius: 0px 0px 0 0;
+}
+.ol-layerswitcher p:first-child{
+  border-radius: 2px 2px 0 0;
+}
+.ol-layerswitcher p:last-child{
+  border-radius: 0 0 2px 2px ;
+}
