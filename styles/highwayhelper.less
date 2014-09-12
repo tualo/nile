@@ -1,0 +1,37 @@
+
+// Fonts //
+@sans: 'Source Sans Pro Regular';
+@sans_italic: 'Source Sans Pro Italic';
+@sans_bold: 'Source Sans Pro Semibold';
+
+// Common Colors //
+@land: #ffe;
+@water: #c3e6ff;
+
+@mainroad: 'rgb(255,250,190)';
+@builings: 'rgb(210,222,222)';
+
+
+.Line {
+  z-index: 100;
+
+  [zoom>=15]{
+
+
+    [highway=ALL]{
+
+      color: red;
+      z-index: 100;
+      line-width: 0.5;
+
+      [zoom>14]{
+        text-position: 'path';
+        text-tag: 'highway';
+        text-size: 9;
+        text-color: purple;
+        /*text-halo-color: white;*/
+      }
+
+    }
+  }
+}

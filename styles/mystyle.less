@@ -1,0 +1,280 @@
+
+// Fonts //
+@sans: 'Source Sans Pro Regular';
+@sans_italic: 'Source Sans Pro Italic';
+@sans_bold: 'Source Sans Pro Semibold';
+
+// Common Colors //
+@land: #ffe;
+@water: #c3e6ff;
+
+@mainroad: 'rgb(255,250,190)';
+@builings: 'rgb(210,222,222)';
+
+.Map {
+  fill-color: @land;
+
+}
+
+// WATER //
+
+@water: #c3e6ff;
+
+.Line {
+  z-index: 100;
+  [zoom>=1]{
+    [water=river],[water=weir],[water=reservoir],[water=lake],[water=pond]{
+      color: @water;
+      line-width: 10;
+      text-position: 'path';
+      text-tag: 'name';
+      text-size: 15;
+      text-color: blue;
+      text-halo-width: 0.5;
+      text-halo-color: white;
+    }
+    [waterway=river],[waterway=weir],[waterway=reservoir],[waterway=lake],[waterway=pond]{
+      color: @water;
+      line-width: 10;
+      text-position: 'path';
+      text-tag: 'name';
+      text-size: 15;
+      text-color: blue;
+      text-halo-width: 0.5;
+      text-halo-color: white;
+    }
+  }
+}
+
+.Polygon{
+  z-index: 100;
+  [zoom>=1]{
+    [water=river],[water=weir],[water=reservoir],[water=lake],[water=pond]{
+      fill-color: @water;
+      color: @water;
+      line-width: 10;
+      text-position: 'path';
+      text-tag: 'name';
+      text-size: 15;
+      text-color: blue;
+      text-halo-width: 0.5;
+      text-halo-color: white;
+    }
+    [waterway=river],[waterway=weir],[waterway=reservoir],[waterway=lake],[waterway=pond]{
+      fill-color: @water;
+      color: @water;
+      line-width: 10;
+      text-position: 'path';
+      text-tag: 'name';
+      text-size: 15;
+      text-color: blue;
+      text-halo-width: 0.5;
+      text-halo-color: white;
+    }
+  }
+}
+
+
+
+// ROADS //
+
+.Line {
+  z-index: 100;
+
+  [zoom>=15]{
+
+
+    [highway=track]{
+      color: white;
+      z-index: 110;
+      line-width: 3;
+      contour-color: black;
+      contour-width: 1;
+    }
+    [highway=steps]{
+      color: #ddd;
+      line-width: 2;
+      contour-color: black;
+      contour-width: 1;
+    }
+
+    [highway=footway],[highway=pedestrian]{
+      color: #eee;
+      contour-color: black;
+      contour-width: 1;
+    }
+
+    [highway=footway]{
+      z-index: 120;
+      line-width: 2;
+    }
+
+    [highway=pedestrian]{
+      line-width: 3;
+      z-index: 121;
+    }
+
+  }
+
+  [zoom>=12]{
+
+
+    [highway=service],[highway=living_street]{
+      color: white;
+      z-index: 120;
+      line-width: 6;
+      contour-color: black;
+      contour-width: 1;
+    }
+
+
+    [highway=residential]{
+      color: @mainroad;
+      z-index: 130;
+      line-width: 10;
+      contour-color: black;
+      contour-width: 1;
+    }
+  }
+
+  [zoom>=10]{
+
+    [highway=primary],[highway=secondary],[highway=tertiary],
+    [highway=primary_link],[highway=secondary_link],[highway=tertiary_link]{
+      color: @mainroad;
+      z-index: 125;
+      contour-color: black;
+      contour-width: 1;
+    }
+
+    [highway=tertiary],[highway=tertiary_link]{
+      line-width: 12;
+    }
+
+    [highway=primary],[highway=primary_link]{
+      line-width: 14;
+    }
+
+    [highway=secondary],[highway=secondary_link]{
+      line-width: 13;
+
+      text-position: 'path';
+      text-size: 12;
+      text-color: black;
+    }
+  }
+
+  [bridge=yes]{
+    contour-color: black;
+    contour-width: 2;
+  }
+
+  [tunnel=yes]{
+    opacity: 0.9;
+    contour-color: blue;
+    contour-width: 1;
+  }
+
+  [highway=motorway],[highway=motorway_link]{
+    color: purple;
+    z-index: 130;
+    line-width: 30;
+    contour-color: orange;
+    contour-width: 1;
+  }
+}
+
+// RAILWAY //
+.Line {
+  z-index: 100;
+
+  [zoom>=8]{
+    [railway=rail]{
+      color: darkgray;
+      z-index: 110;
+      line-width: 6;
+    }
+  }
+
+  [zoom>=15]{
+    [railway=tram]{
+      color: darkgray;
+      z-index: 110;
+      line-width: 0.8;
+    }
+  }
+}
+
+
+// SURFACE //
+
+
+.Polygon {
+  z-index: 10;
+
+
+  [landuse=farmland]{
+    fill-color: 'rgb(130,180,30)';
+    opacity: 1;
+    line-width: none;
+    color: cyan;
+  }
+
+}
+
+
+
+// BULDINGS //
+
+.Polygon {
+  z-index: 10;
+
+  [zoom>14]{
+    [building=ALL]{
+
+      z-index: 200;
+      line-width: 0.5;
+      color: black;
+
+      [building=yes],
+      [building=office],
+      [building=commercial],
+      [building=hotel],
+      [building=apartments],
+      [building=school],
+      [building=residential],
+      [building=roof],
+      [building=house],
+      [building=church],
+      [building=temple],
+      [building=theatre],
+      [building=townhall],
+      [building=university],
+      [building=warehouse],
+      [building=garage],
+      [building=garages],
+      [building=college],
+      [building=museum],
+      [building=public],
+      [building=public_building],
+      [building=tower],
+      [building=shed],
+      [building=sports_center],
+      [building=restaurant],
+      [building=monastery],
+      [building=train_station],
+      [building=shelter]{
+        fill-color: @builings;
+      }
+
+      [zoom>16]{
+        text-position: 'path';
+        text-tag: 'addr:housenumber';
+        text-size: 9;
+        text-color: white;
+        text-halo-color: black;
+        text-halo-width: 3;
+      }
+    }
+  }
+}
