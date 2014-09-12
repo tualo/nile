@@ -7,9 +7,9 @@ select
     ,##transscale)
   , 0 ) as data,
 
-z_order,
+  z_order,
 
-  hstore2json( tags ) AS tags,
+  hstore2json( cast(tags as hstore) ) AS tags,
   ST_AsGeoJSON(
     ST_TransScale(
       ST_ForceRHR(
@@ -22,3 +22,4 @@ WHERE
   ST_Intersects( ##way_column, ##srid )
   AND way_area > ##way_area
   AND ST_Area(##way_column) > ##way_area_buffer
+  ##cond

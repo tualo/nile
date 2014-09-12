@@ -1,22 +1,26 @@
+"use strict";
 var EventEmitter = require('events').EventEmitter,
 fs = require('fs'),
 path = require('path'),
 utilities = require('./Utilities'),
 mkdirp = require('mkdirp'),
-Kothic =  require('node-kothic').Kothic;
+Kothic =  require('node-kothic').Kothic,
+Styler =  require('nile-style').Renderer;
 
 var conditions = [
-  "AND (tags->'usage'='main')",
-	"AND (tags->'usage'='main')",
-	"AND (tags->'usage'='main')",
-	"AND (tags->'usage'='main')",
-	"AND (tags->'usage'='main')",
-	"AND (tags->'usage'='main')",
-	"AND (tags->'usage'='main')",
-	"AND (tags->'usage'='main')",
-	"AND ((tags->'usage'='main') OR (tags->'usage'='branch'))",
-	"AND ((tags->'usage'='main') OR (tags->'usage'='branch') OR (tags->'railway'='disused') OR (tags->'railway'='abandoned') OR (tags->'railway'='proposed') OR (tags->'railway'='construction') OR (tags->'railway'='station') OR (tags->'railway'='narrow_gauge'))",
-	"AND ((tags->'railway'='rail') OR (tags->'railway'='disused') OR (tags->'railway'='abandoned') OR (tags->'railway'='proposed') OR (tags->'railway'='construction') OR (tags->'railway'='light_rail') OR (tags->'railway'='tram') OR (tags->'railway'='subway') OR (tags->'railway'='narrow_gauge') OR (tags->'railway'='station') OR (tags->'railway'='halt'))"
+/*
+"AND (tags->'usage'='main')",
+"AND (tags->'usage'='main')",
+"AND (tags->'usage'='main')",
+"AND (tags->'usage'='main')",
+"AND (tags->'usage'='main')",
+"AND (tags->'usage'='main')",
+"AND (tags->'usage'='main')",
+"AND (tags->'usage'='main')",
+"AND ((tags->'usage'='main') OR (tags->'usage'='branch'))",
+"AND ((tags->'usage'='main') OR (tags->'usage'='branch') OR (tags->'railway'='disused') OR (tags->'railway'='abandoned') OR (tags->'railway'='proposed') OR (tags->'railway'='construction') OR (tags->'railway'='station') OR (tags->'railway'='narrow_gauge'))",
+"AND ((tags->'railway'='rail') OR (tags->'railway'='disused') OR (tags->'railway'='abandoned') OR (tags->'railway'='proposed') OR (tags->'railway'='construction') OR (tags->'railway'='light_rail') OR (tags->'railway'='tram') OR (tags->'railway'='subway') OR (tags->'railway'='narrow_gauge') OR (tags->'railway'='station') OR (tags->'railway'='halt'))"
+*/
 ];
 
 
@@ -28,6 +32,7 @@ var Tile = function(system){
   self._x = 0;
   self._y = 0;
   self._tileSize = 256;
+  self._filter = '';
 
   return self;
 }
@@ -44,6 +49,9 @@ utilities.inherits(Tile, EventEmitter, {
 
   get style () { return this._style; },
   set style (v) { this._style = v; return this; },
+
+  get filter () { return this._filter; },
+  set filter (v) { this._filter = v; return this; },
 
   get x () { return this._x; },
   set x (v) {
@@ -88,19 +96,37 @@ Tile.prototype.sqlQuery = function(name){
   base = this.base,
   as = this.as,
   bbox = this.bbox;
-  var tolerance = 0;
+  var tolerance = (bbox[2]-bbox[0]);
   var granularity  = 10000;
   var cond      = "";
   var xfactor = (granularity/(bbox[2]-bbox[0]));
   var yfactor = (granularity/(bbox[3]-bbox[1]));
   var deltaX = bbox[0]*-1;
   var deltaY = bbox[1]*-1;
+  var key = '';
+  var filter = '';
   var transscale = ''+(-bbox[0])+', '+(-bbox[1])+', '+granularity/(bbox[2]-bbox[0])+', '+granularity/(bbox[3]-bbox[1])+'';
   var srid = "ST_SetSRID('BOX3D("+(bbox[0]-tolerance)+" "+(bbox[1]-tolerance)+","+(bbox[2]+tolerance)+" "+(bbox[3]+tolerance)+")'::box3d, 900913) "+cond+" ";
   var sql = ( fs.readFileSync( path.join(__dirname,'sqls',name+'.sql') )).toString() ;
 
   if (typeof conditions[self.z*1] === 'string'){
     cond = conditions[self.z*1];
+  }
+
+  if (typeof this.filter==='object'){
+    for(key in this.filter){
+      var op=this.filter[key].comp;
+      if (op === ' === '){
+        op = '=';
+      }
+      if (filter!==''){
+        filter+= 'or';
+      }
+      filter += " tags->'"+this.filter[key].tag+"' "+op+" " + this.filter[key].value + " "
+    }
+  }
+  if (filter!==''){
+    cond += ' and ('+ filter + ') ';
   }
 
   sql = sql.replace(/\#\#way_area_buffer/g,way_area_buffer);
@@ -111,6 +137,7 @@ Tile.prototype.sqlQuery = function(name){
   sql = sql.replace(/\#\#buffer/g,buffer);
   sql = sql.replace(/\#\#transscale/g,transscale);
   sql = sql.replace(/\#\#prefix/g,prefix);
+  //console.log(sql);
   return sql;
 }
 
@@ -135,7 +162,7 @@ Tile.prototype.__getDatabaseQuery = function(){
   as = this.as,
   bbox = this.bbox;
 
-  var tolerance = 0;
+  var tolerance = (bbox[2]-bbox[0]);
   var granularity  = 10000;
   var cond      = "";
 
@@ -223,7 +250,7 @@ Tile.prototype.invertYAxe = function(data){
       }
 
     }else{
-      this.logger.log('warn',"Unexpected GeoJSON type: " + type);
+      //this.logger.log('warn',"Unexpected GeoJSON type: " + type);
       //throw "Unexpected GeoJSON type: " + type;
     }
 
@@ -272,13 +299,13 @@ Tile.prototype.queryAsGeoJSON = function(callback){
                 json.properties[field] = result[i][field];
               }
             }
-            if (field==='reprpoint'){
-              if (typeof result[i].reprpoint==='string'){
-                json.reprpoint = (JSON.parse(result[i].reprpoint) ).coordinates;
-              }
-            }
           }
         }
+
+        if (typeof result[i].reprpoint==='string'){
+          json.reprpoint = (JSON.parse(result[i].reprpoint) ).coordinates;
+        }
+
         data.features.push(json);
       }
       callback(false, self.invertYAxe(data));
@@ -407,41 +434,61 @@ var route = function(system,style,zoom,x,y){
 
   return function(req,res,next){
     var tile = new Tile(system),
-    image_path = path.join(__dirname,'..','public','map',req.params.zoom,req.params.x)
+    image_path = path.join(__dirname,'..','public','map',coords.zoom,coords.x)
     output = path.join(image_path,req.params.y+'.png');
 
-    tile.z = zoom;
-    tile.x = x;
-    tile.y = y;
+    tile.z = coords.zoom;
+    tile.x = coords.x;
+    tile.y = coords.y;
     tile._updateBBox();
-    mkdirp(image_path, function (err) {
-      if (err){
-        console.error(err);
-        next();
-      }else{
+
+    if(fs.existsSync(path.join(image_path,req.params.y+'.geojson'))){
+      var data = JSON.parse(fs.readFileSync(path.join(image_path,coords.y+'.geojson')));
+      var kothic = new Kothic(1,system.mapCSS);
+      kothic.setOptions({
+        styles: [style]
+      });
+      kothic.setZoom(coords.zoom);
+      kothic.setGeoJSON(data);
+      kothic.run(output,function(){
+        res.sendFile(output);
+        //console.log(coords,'!');
+      });
+
+    }else{
+      mkdirp(image_path, function (err) {
+        if (err){
+          console.error(err);
+          next();
+        }else{
 
 
-        tile.queryAsGeoJSON(function(err,data){
-          var kothic;
+          tile.queryAsGeoJSON(function(err,data){
+            var kothic;
 
-          fs.writeFile(path.join(image_path,req.params.y+'.geojson'),JSON.stringify(data,null,4),function(err){
+            fs.writeFile(path.join(image_path,coords.y+'.geojson'),JSON.stringify(data,null,4),function(err){
+
+            });
+
+            kothic = new Kothic(1,system.mapCSS);
+            kothic.setOptions({
+              styles: [style]
+            });
+
+            kothic.setZoom(coords.zoom);
+            kothic.setGeoJSON(data);
+            kothic.run(output,function(){
+              //console.log(coords,'***');
+              res.sendFile(output);
+            });
 
           });
-
-          kothic = new Kothic(1,system.mapCSS);
-          kothic.setOptions({
-            styles: [style]
-          });
-          kothic.setZoom(req.params.zoom);
-          kothic.setGeoJSON(data);
-          kothic.run(output,function(){
-            res.sendFile(output);
-          });
-
-        });
-      }
-    });
+        }
+      });
+    }
   }
+
+
 }
 
 exports.route = route;

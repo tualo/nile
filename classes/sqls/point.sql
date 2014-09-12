@@ -4,9 +4,10 @@ SELECT
       0
   ) AS data,
 z_order,
-  hstore2json(tags) AS tags,
+  hstore2json(cast(tags as hstore)) AS tags,
   Null AS reprpoint
 FROM
   ##prefix_point
 WHERE
   ST_Intersects(##way_column , ##srid )
+  ##cond

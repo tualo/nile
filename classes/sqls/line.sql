@@ -8,7 +8,7 @@ SELECT
   ) AS data,
 z_order,
 
-	hstore2json( tags ) as tags,
+	hstore2json( cast(tags as hstore) ) as tags,
 	Null AS reprpoint
 FROM
   ##prefix_line

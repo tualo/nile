@@ -36,9 +36,10 @@
   "readmeFilename": "README.md",
   "dependencies": {
     "colors": "0.6.2",
+    "commander": "2.0.0",
     "express": "4.8.7",
     "mkdirp": "0.5.0",
-    "node-kothic": "*",
+    "node-style": "*",
     "pg": "3.4.1",
     "jade": "1.6.0",
     "glob": "*"

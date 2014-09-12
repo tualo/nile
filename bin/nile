@@ -1,5 +1,50 @@
 #!/usr/bin/env node
 var pjson = require('../package.json'),
-  server = require('../lib/main');
+  main = require('../lib/main'),
+  Geocoder = require('../classes/Geocoder').Geocoder,
+  program = require('commander'),
+  showhelp = true;
 
-server.startup();
+
+
+var help = function(){
+    var examples = [];
+    console.log(examples.join("\n"));
+}
+
+program
+    .version(pjson.version)
+    .description('nile n(ode) tileserver')
+    .usage('[options]')
+    .option('-s, --service', 'run the service')
+    .option('-g, --geocode', 'geocode a given adress')
+    .option('-c, --creategeocode', 'create or recreates the geocode index')
+    .on('--help', help)
+    .parse(process.argv);
+
+if (program.service){
+  showhelp = false;
+  
+  main.startup();
+}
+
+if (program.creategeocode){
+  showhelp = false;
+  main.init(function(system){
+    system.connect(function(err){
+      if (err){
+        system.logger.log('error',err);
+      }else{
+        var geocoder = new Geocoder(system);
+        geocoder.createOrUpdate(function(){
+          system.disconnect();
+        });
+      }
+    });
+  });
+}
+
+
+if (showhelp){
+  program.help();
+}
