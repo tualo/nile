@@ -46,7 +46,7 @@ function fillLayerList (layers){
       visible: layers[i].visible,
       source: new ol.source.XYZ(
         {
-          url: './live/'+layers[i].style+'/{z}/{x}/{y}.png',
+          url: './-/'+layers[i].style+'/{z}/{x}/{y}.png',
           attributions: [
             new ol.Attribution({
               html: layers[i].title+' Tiles &copy; <a target="_blank" href="http://www.tualo.de/">tualo</a>'
