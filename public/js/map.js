@@ -5,6 +5,12 @@ var layers = [
     visible: true
   },
   {
+    title: 'Gebäude',
+    style: 'buildings',
+    visible: true
+  },
+
+  {
     title: 'Strassen-Tags',
     style: 'highwayhelper',
     visible: false
