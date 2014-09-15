@@ -80,24 +80,24 @@ System.prototype.startService = function(){
 System.prototype.loadStyles = function(callback){
   var styleInstructions,styleName,dirName,i,self = this;
   mkdirp(path.join(__dirname,'..','styles','instructions'), function (err) {
-  glob( path.join(__dirname,'..','styles','*.less'), function (er, files) {
-    for(i=0;i<files.length;i++){
-      dirName = path.dirname(files[i]);
-      styleName = path.basename(files[i],'.less');
-      //system.logger.log('debug','compile '+ styleName);
-      styleInstructions = new StyleInstructions(path.join(__dirname,'..','styles',styleName+'.less'));
-      styleInstructions.create(path.join(__dirname,'..','styles','instructions',styleName+'.js'));
-      try{
+    glob( path.join(__dirname,'..','styles','*.less'), function (er, files) {
+      for(i=0;i<files.length;i++){
+        dirName = path.dirname(files[i]);
+        styleName = path.basename(files[i],'.less');
+        //system.logger.log('debug','compile '+ styleName);
+        styleInstructions = new StyleInstructions(path.join(__dirname,'..','styles',styleName+'.less'));
+        styleInstructions.create(path.join(__dirname,'..','styles','instructions',styleName+'.js'));
+        try{
 
-      self.styles[styleName] = require(path.join(__dirname,'..','styles','instructions',styleName));
-    }catch(e){
-      console.log( path.join(__dirname,'..','styles','instructions',styleName) ,'failed');
-    }
+          self.styles[styleName] = require(path.join(__dirname,'..','styles','instructions',styleName));
+        }catch(e){
+          console.log( path.join(__dirname,'..','styles','instructions',styleName) ,'failed');
+        }
 
-    }
-    callback();
-  });
-})
+      }
+      callback();
+    });
+  })
 }
 
 System.prototype.connect = function(callback){
@@ -239,51 +239,56 @@ System.prototype.getGeoJSON = function(request,callback,filter){
   if (typeof filter==='undefined'){
     filter = {};
   }
+  if(typeof system.styles[style]==='undefined'){
+    callback('no such style');
+  }else{
 
-  fs.exists(path.join(json_path,coords.y+'.geojson'),function(exists){
-    if (exists  && ( !request.params.live ) ){
-      fs.readFile(path.join(json_path,coords.y+'.geojson'),function(err,data){
-        if (err){
-          callback(err,null);
-        }else{
-          callback( false,JSON.parse( data.toString() ) );
-        }
-      });
-    }else{
-      mkdirp(json_path, function (err) {
-        var tile,
-        filters,
-        output;
+    fs.exists(path.join(json_path,coords.y+'.geojson'),function(exists){
+      if (exists  && ( !request.params.live ) ){
+        fs.readFile(path.join(json_path,coords.y+'.geojson'),function(err,data){
+          if (err){
+            callback(err,null);
+          }else{
+            callback( false,JSON.parse( data.toString() ) );
+          }
+        });
+      }else{
+        mkdirp(json_path, function (err) {
+          var tile,
+          filters,
+          output;
 
-        if (err){
-          callback(err,null);
-        }else{
-          tile = new Tile(system);
-          filters = system.styles[style].filter(coords.zoom);
+          if (err){
+            callback(err,null);
+          }else{
 
-          output = path.join(json_path,coords.y+'.png');
-          tile.z = coords.zoom;
-          tile.x = coords.x;
-          tile.y = coords.y;
-          tile.filter = filters;
-          tile._updateBBox();
-          tile.queryAsGeoJSON(function(err,data){
-            if (err){
-              callback(err,null);
-            }else{
-              fs.writeFile(path.join(json_path,coords.y+'.geojson'),JSON.stringify(data,null,2),function(err){
-                if (err){
-                  callback(err,null);
-                }else{
-                  callback( false, data );
-                }
-              });
-            }
-          })
-        }
-      });
-    }
-  });
+            tile = new Tile(system);
+            filters = system.styles[style].filter(coords.zoom);
+
+            output = path.join(json_path,coords.y+'.png');
+            tile.z = coords.zoom;
+            tile.x = coords.x;
+            tile.y = coords.y;
+            tile.filter = filters;
+            tile._updateBBox();
+            tile.queryAsGeoJSON(function(err,data){
+              if (err){
+                callback(err,null);
+              }else{
+                fs.writeFile(path.join(json_path,coords.y+'.geojson'),JSON.stringify(data,null,2),function(err){
+                  if (err){
+                    callback(err,null);
+                  }else{
+                    callback( false, data );
+                  }
+                });
+              }
+            })
+          }
+        });
+      }
+    });
+  }
 }
 
 
