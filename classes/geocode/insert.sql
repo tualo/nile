@@ -1,4 +1,4 @@
-insert into geocode (
+insert into nile_geocode (
   osm_id,
   city,
   name,

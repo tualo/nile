@@ -24,7 +24,7 @@ program
 
 if (program.service){
   showhelp = false;
-  
+
   main.startup();
 }
 

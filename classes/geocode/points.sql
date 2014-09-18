@@ -12,3 +12,17 @@ from
   planet_osm_point
 where
   tags->'addr:housenumber' <> ''
+
+explain select
+  *
+from
+  ( select tags->'name' strasse,way from planet_osm_line where highway<>'') r,
+  ( select tags->'name' ort,way from planet_osm_polygon where boundary='administrative') b
+where ST_Intersects(r.way,b.way)
+
+explain select
+  *
+from
+  ( select tags->'name' strasse,way from planet_osm_line where tags->'highway'<>'') r,
+  ( select tags->'name' ort,way from planet_osm_polygon where tags->'boundary'='administrative') b
+where ST_Intersects(r.way,b.way)

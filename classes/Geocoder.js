@@ -107,6 +107,15 @@ Geocoder.prototype.insertItems = function(items,index,callback){
 
 
 Geocoder.prototype.geoCode = function(address){
+  var parts = address.split(' '),
+      i;
+
+  for(i=0;i<parts.length;i++){
+    client.query("select tags->'name' ort,way from planet_osm_polygon where tags->'boundary'='administrative' and tags->'name' like '%'++'%'", function(err, results){
+      self.insertItems(items,index+1,callback);
+    });
+
+  }
 
 }
 

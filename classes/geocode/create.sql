@@ -1,4 +1,4 @@
-create table geocode (
+create table nile_geocode (
   osm_id bigint,
   city text,
   name text,
