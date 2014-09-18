@@ -7,7 +7,7 @@ var layers = [
   {
     title: 'Gebäude',
     style: 'buildings',
-    visible: true
+    visible: false
   },
 
   {
@@ -38,6 +38,16 @@ var layers = [
   {
     title: 'Eisenbahn-Tags',
     style: 'railwayhelper',
+    visible: false
+  },
+  {
+    title: 'amenity-Tags',
+    style: 'amenityhelper',
+    visible: false
+  },
+  {
+    title: 'natural-Tags',
+    style: 'naturalhelper',
     visible: false
   }
 ];
@@ -144,7 +154,7 @@ var map = new ol.Map({
   view: new ol.View({
     center: [1229413.1629387736,6616694.916475148],
     projection: 'EPSG:3857',
-    zoom: 17,
+    zoom: 16,
     maxZoom: 23,
     minZoom: 5
   })
