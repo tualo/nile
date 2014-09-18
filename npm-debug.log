@@ -1,0 +1,163 @@
+0 info it worked if it ends with ok
+1 verbose cli [ 'node', '/usr/local/bin/npm', 'publish' ]
+2 info using npm@1.4.9
+3 info using node@v0.10.28
+4 verbose publish [ '.' ]
+5 verbose cache add [ '.', null ]
+6 verbose cache add name=undefined spec="." args=[".",null]
+7 verbose parsed url { protocol: null,
+7 verbose parsed url   slashes: null,
+7 verbose parsed url   auth: null,
+7 verbose parsed url   host: null,
+7 verbose parsed url   port: null,
+7 verbose parsed url   hostname: null,
+7 verbose parsed url   hash: null,
+7 verbose parsed url   search: null,
+7 verbose parsed url   query: null,
+7 verbose parsed url   pathname: '.',
+7 verbose parsed url   path: '.',
+7 verbose parsed url   href: '.' }
+8 silly lockFile 3a52ce78- .
+9 verbose lock . /Users/thomashoffmann/.npm/3a52ce78-.lock
+10 verbose tar pack [ '/var/folders/yn/72cnjgt925j4bz58pscvl4sr0000gn/T/npm-4870-XHVEljUI/1411025323388-0.9603510808665305/tmp.tgz',
+10 verbose tar pack   '.' ]
+11 verbose tarball /var/folders/yn/72cnjgt925j4bz58pscvl4sr0000gn/T/npm-4870-XHVEljUI/1411025323388-0.9603510808665305/tmp.tgz
+12 verbose folder .
+13 info prepublish nile@0.0.8
+14 silly lockFile 1f1177db-tar tar://.
+15 verbose lock tar://. /Users/thomashoffmann/.npm/1f1177db-tar.lock
+16 silly lockFile c39bb036-23388-0-9603510808665305-tmp-tgz tar:///var/folders/yn/72cnjgt925j4bz58pscvl4sr0000gn/T/npm-4870-XHVEljUI/1411025323388-0.9603510808665305/tmp.tgz
+17 verbose lock tar:///var/folders/yn/72cnjgt925j4bz58pscvl4sr0000gn/T/npm-4870-XHVEljUI/1411025323388-0.9603510808665305/tmp.tgz /Users/thomashoffmann/.npm/c39bb036-23388-0-9603510808665305-tmp-tgz.lock
+18 silly lockFile 1f1177db-tar tar://.
+19 silly lockFile 1f1177db-tar tar://.
+20 silly lockFile c39bb036-23388-0-9603510808665305-tmp-tgz tar:///var/folders/yn/72cnjgt925j4bz58pscvl4sr0000gn/T/npm-4870-XHVEljUI/1411025323388-0.9603510808665305/tmp.tgz
+21 silly lockFile c39bb036-23388-0-9603510808665305-tmp-tgz tar:///var/folders/yn/72cnjgt925j4bz58pscvl4sr0000gn/T/npm-4870-XHVEljUI/1411025323388-0.9603510808665305/tmp.tgz
+22 verbose tar unpack /var/folders/yn/72cnjgt925j4bz58pscvl4sr0000gn/T/npm-4870-XHVEljUI/1411025323388-0.9603510808665305/tmp.tgz
+23 silly lockFile 12e1ece4-shoffmann-npm-nile-0-0-8-package tar:///Users/thomashoffmann/.npm/nile/0.0.8/package
+24 verbose lock tar:///Users/thomashoffmann/.npm/nile/0.0.8/package /Users/thomashoffmann/.npm/12e1ece4-shoffmann-npm-nile-0-0-8-package.lock
+25 silly lockFile c39bb036-23388-0-9603510808665305-tmp-tgz tar:///var/folders/yn/72cnjgt925j4bz58pscvl4sr0000gn/T/npm-4870-XHVEljUI/1411025323388-0.9603510808665305/tmp.tgz
+26 verbose lock tar:///var/folders/yn/72cnjgt925j4bz58pscvl4sr0000gn/T/npm-4870-XHVEljUI/1411025323388-0.9603510808665305/tmp.tgz /Users/thomashoffmann/.npm/c39bb036-23388-0-9603510808665305-tmp-tgz.lock
+27 silly gunzTarPerm modes [ '755', '644' ]
+28 silly gunzTarPerm extractEntry package.json
+29 silly gunzTarPerm extractEntry .npmignore
+30 silly gunzTarPerm extractEntry README.md
+31 silly gunzTarPerm extractEntry bin/nile
+32 silly gunzTarPerm extractEntry classes/Geocoder.js
+33 silly gunzTarPerm extractEntry classes/System.js
+34 silly gunzTarPerm extractEntry classes/Tile.js
+35 silly gunzTarPerm extractEntry classes/Utilities.js
+36 silly gunzTarPerm extractEntry classes/geocode/create.sql
+37 silly gunzTarPerm extractEntry classes/geocode/insert.sql
+38 silly gunzTarPerm extractEntry classes/geocode/points.sql
+39 silly gunzTarPerm extractEntry classes/geocode/postal.polygon.sql
+40 silly gunzTarPerm extractEntry classes/sqls/line.slow.sql
+41 silly gunzTarPerm extractEntry classes/sqls/line.sql
+42 silly gunzTarPerm extractEntry classes/sqls/point.sql
+43 silly gunzTarPerm extractEntry classes/sqls/polygon.slow.sql
+44 silly gunzTarPerm extractEntry classes/sqls/polygon.sql
+45 silly gunzTarPerm extractEntry config/sample.json
+46 silly gunzTarPerm extractEntry INSTALL.md
+47 silly gunzTarPerm extractEntry styles/amenityhelper.less
+48 silly gunzTarPerm extractEntry styles/buildinghelper.less
+49 silly gunzTarPerm extractEntry styles/buildings.less
+50 silly gunzTarPerm extractEntry styles/highwayhelper.less
+51 silly gunzTarPerm extractEntry styles/boundaryhelper.less
+52 silly gunzTarPerm extractEntry styles/mystyle.less
+53 silly gunzTarPerm extractEntry styles/naturalhelper.less
+54 silly gunzTarPerm extractEntry styles/postalcodehelper.less
+55 silly gunzTarPerm extractEntry styles/railwayhelper.less
+56 silly gunzTarPerm extractEntry styles/waterhelper.less
+57 silly gunzTarPerm extractEntry template/index.jade
+58 silly gunzTarPerm extractEntry public/css/layerswitcher.css
+59 silly gunzTarPerm extractEntry public/css/ol.css
+60 silly gunzTarPerm modified mode [ 'public/css/ol.css', 436, 420 ]
+61 silly gunzTarPerm extractEntry public/js/jquery.min.js
+62 silly gunzTarPerm modified mode [ 'public/js/jquery.min.js', 436, 420 ]
+63 silly gunzTarPerm extractEntry public/js/map.js
+64 silly gunzTarPerm extractEntry public/js/ol.js
+65 silly gunzTarPerm modified mode [ 'public/js/ol.js', 436, 420 ]
+66 silly gunzTarPerm extractEntry lib/convert.js
+67 silly gunzTarPerm extractEntry lib/main.js
+68 silly lockFile 12e1ece4-shoffmann-npm-nile-0-0-8-package tar:///Users/thomashoffmann/.npm/nile/0.0.8/package
+69 silly lockFile 12e1ece4-shoffmann-npm-nile-0-0-8-package tar:///Users/thomashoffmann/.npm/nile/0.0.8/package
+70 silly lockFile c39bb036-23388-0-9603510808665305-tmp-tgz tar:///var/folders/yn/72cnjgt925j4bz58pscvl4sr0000gn/T/npm-4870-XHVEljUI/1411025323388-0.9603510808665305/tmp.tgz
+71 silly lockFile c39bb036-23388-0-9603510808665305-tmp-tgz tar:///var/folders/yn/72cnjgt925j4bz58pscvl4sr0000gn/T/npm-4870-XHVEljUI/1411025323388-0.9603510808665305/tmp.tgz
+72 silly lockFile 3a52ce78- .
+73 silly lockFile 3a52ce78- .
+74 silly publish { name: 'nile',
+74 silly publish   description: 'Node Tile Server',
+74 silly publish   homepage: 'https://github.com/tualo/nile',
+74 silly publish   main: 'lib/main.js',
+74 silly publish   bin: { nile: './bin/nile' },
+74 silly publish   version: '0.0.8',
+74 silly publish   engines: { node: '>=0.10.0' },
+74 silly publish   keywords: [ 'gis', 'osm', 'tile' ],
+74 silly publish   author: '',
+74 silly publish   maintainers:
+74 silly publish    [ { name: 'Thomas Hoffmann',
+74 silly publish        email: 'thomas.hoffmann@tualo.de',
+74 silly publish        url: 'http://tualo.de/' } ],
+74 silly publish   repository: { type: 'git', url: 'https://github.com/tualo/nile.git' },
+74 silly publish   readmeFilename: 'README.md',
+74 silly publish   dependencies:
+74 silly publish    { colors: '0.6.2',
+74 silly publish      commander: '2.0.0',
+74 silly publish      express: '4.8.7',
+74 silly publish      mkdirp: '0.5.0',
+74 silly publish      'nile-style': '*',
+74 silly publish      pg: '3.4.1',
+74 silly publish      jade: '1.6.0',
+74 silly publish      glob: '*' },
+74 silly publish   devDependencies:
+74 silly publish    { grunt: '~0.4.2',
+74 silly publish      'grunt-contrib-jshint': '~0.6.3',
+74 silly publish      'grunt-contrib-nodeunit': '~0.2.0',
+74 silly publish      'grunt-contrib-uglify': '~0.2.2' },
+74 silly publish   readme: '# nile\n\n nile (n(ode )tile) aims to be a tileserver using [NodeJS](http://nodejs.org/).\n\n# Requirements\n\n  Nile uses osm - postgis database for rendering, therefor you need a\n\n  * PostgreSQL with PostGIS\n  * imported OpenStreetMap data (see [Installation](http://wiki.openstreetmap.org/wiki/PostGIS/Installation))\n  * Cairo, needed for [node-canvas](https://github.com/Automattic/node-canvas)\n\n  You have to import the OpenStreetMap with the --hstore-match-only or --hstore-all\n  option. Nile uses the tags-column for filtering.\n\n# Install\n\n  You can simply install nile with\n\n      npm install nile -g\n\n  Atfer that you can set up your service by creating a config file a sample\n  configuration can be found at config/sample.json. At the startup the service\n  searches at the folowing paths for a config file.\n\n  * /etc/nile/config.json\n  * ./config.json\n  * ./config/config.json\n  * ./config/sample.json\n\n# Run\n\n  You can run the service by\n\n    nile -s\n',
+74 silly publish   bugs: { url: 'https://github.com/tualo/nile/issues' },
+74 silly publish   _id: 'nile@0.0.8',
+74 silly publish   _shasum: '0ba69d5646edf41a78a849084eacb559cb0bdfb8',
+74 silly publish   _from: '.' }
+75 verbose url raw nile
+76 verbose url resolving [ 'https://registry.npmjs.org/', './nile' ]
+77 verbose url resolved https://registry.npmjs.org/nile
+78 info trying registry request attempt 1 at 09:28:43
+79 http PUT https://registry.npmjs.org/nile
+80 http 403 https://registry.npmjs.org/nile
+81 verbose headers { date: 'Thu, 18 Sep 2014 07:28:46 GMT',
+81 verbose headers   server: 'CouchDB/1.5.0 (Erlang OTP/R14B04)',
+81 verbose headers   'content-type': 'application/json',
+81 verbose headers   'cache-control': 'max-age=60',
+81 verbose headers   'content-length': '230',
+81 verbose headers   'accept-ranges': 'bytes',
+81 verbose headers   via: '1.1 varnish',
+81 verbose headers   'x-served-by': 'cache-ams4122-AMS',
+81 verbose headers   'x-cache': 'MISS',
+81 verbose headers   'x-cache-hits': '0',
+81 verbose headers   'x-timer': 'S1411025324.671727,VS0,VE2272',
+81 verbose headers   'keep-alive': 'timeout=10, max=50',
+81 verbose headers   connection: 'Keep-Alive' }
+82 error publish Failed PUT 403
+83 error Error: forbidden Attempting to modify version 0.0.8,
+83 error which was previously published on 2014-09-18T07:22:16.989Z.
+83 error This is forbidden, to maintain package integrity.
+83 error Please update the version number and try again.: nile
+83 error     at RegClient.<anonymous> (/usr/local/lib/node_modules/npm/node_modules/npm-registry-client/lib/request.js:273:14)
+83 error     at Request._callback (/usr/local/lib/node_modules/npm/node_modules/npm-registry-client/lib/request.js:211:65)
+83 error     at Request.self.callback (/usr/local/lib/node_modules/npm/node_modules/request/request.js:123:22)
+83 error     at Request.EventEmitter.emit (events.js:98:17)
+83 error     at Request.<anonymous> (/usr/local/lib/node_modules/npm/node_modules/request/request.js:893:14)
+83 error     at Request.EventEmitter.emit (events.js:117:20)
+83 error     at IncomingMessage.<anonymous> (/usr/local/lib/node_modules/npm/node_modules/request/request.js:844:12)
+83 error     at IncomingMessage.EventEmitter.emit (events.js:117:20)
+83 error     at _stream_readable.js:919:16
+83 error     at process._tickCallback (node.js:419:13)
+84 error If you need help, you may report this *entire* log,
+84 error including the npm and node versions, at:
+84 error     <http://github.com/npm/npm/issues>
+85 error System Darwin 13.3.0
+86 error command "node" "/usr/local/bin/npm" "publish"
+87 error cwd /Users/thomashoffmann/Documents/Projects/Node/nile
+88 error node -v v0.10.28
+89 error npm -v 1.4.9
+90 verbose exit [ 1, true ]
