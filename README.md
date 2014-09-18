@@ -10,6 +10,8 @@
     * imported OpenStreetMap data (see [Installation](http://wiki.openstreetmap.org/wiki/PostGIS/Installation))
     * Cairo, needed for [node-canvas](https://github.com/Automattic/node-canvas)
 
+  You have to import the OpenStreetMap with the --hstore-match-only or --hstore-all
+  option. Nile uses the tags-column for filtering.
 
 # Install
 
@@ -25,5 +27,3 @@
     * <program-path>/config.json
     * <program-path>/config/config.json
     * <program-path>/config/sample.json
-
-  
