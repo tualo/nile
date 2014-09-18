@@ -4,7 +4,6 @@ fs = require('fs'),
 path = require('path'),
 utilities = require('./Utilities'),
 mkdirp = require('mkdirp'),
-Kothic =  require('node-kothic').Kothic,
 Styler =  require('nile-style').Renderer;
 
 var conditions = [
