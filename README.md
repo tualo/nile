@@ -27,3 +27,11 @@
   * <program-path>/config.json
   * <program-path>/config/config.json
   * <program-path>/config/sample.json
+
+# Run
+
+  You can run the service by
+
+    nile -s
+
+  
