@@ -11,6 +11,10 @@
 @mainroad: 'rgb(255,250,190)';
 @builings: 'rgb(210,222,222)';
 
+@farmland: 'rgb(210,222,100)';
+@wood: 'rgb(20,122,42)';
+@scrub: 'rgb(60,162,82)';
+
 .Map {
   fill-color: @land;
 
@@ -23,50 +27,32 @@
 .Line {
   z-index: 100;
   [zoom>=1]{
-    [water=river],[water=weir],[water=reservoir],[water=lake],[water=pond]{
-      color: @water;
-      line-width: 10;
-      text-position: 'path';
-      text-tag: 'name';
-      text-size: 15;
-      text-color: blue;
-      text-halo-width: 0.5;
-      text-halo-color: white;
-    }
+    [natural=water],[water=river],[water=weir],[water=reservoir],[water=lake],[water=pond],
     [waterway=river],[waterway=weir],[waterway=reservoir],[waterway=lake],[waterway=pond]{
       color: @water;
       line-width: 10;
       text-position: 'path';
       text-tag: 'name';
-      text-size: 15;
+      text-size: 8;
       text-color: blue;
       text-halo-width: 0.5;
       text-halo-color: white;
     }
+
   }
 }
 
 .Polygon{
   z-index: 100;
   [zoom>=1]{
-    [water=river],[water=weir],[water=reservoir],[water=lake],[water=pond]{
+    [natural=water],[water=river],[water=weir],[water=reservoir],[water=lake],[water=pond]{
       fill-color: @water;
       color: @water;
       line-width: 10;
       text-position: 'path';
       text-tag: 'name';
-      text-size: 15;
-      text-color: blue;
-      text-halo-width: 0.5;
-      text-halo-color: white;
-    }
-    [waterway=river],[waterway=weir],[waterway=reservoir],[waterway=lake],[waterway=pond]{
-      fill-color: @water;
-      color: @water;
-      line-width: 10;
-      text-position: 'path';
-      text-tag: 'name';
-      text-size: 15;
+      text-size: 90%;
+      text-opacity: 0.5;
       text-color: blue;
       text-halo-width: 0.5;
       text-halo-color: white;
@@ -83,14 +69,22 @@
 
   [zoom>=15]{
 
-    text-position: 'path';
-    text-tag: 'name';
-    text-size: 10;
-    text-color: black;
-    text-halo-width: 0.1;
-    text-halo-color: white;
+    [highway=service],
+    [highway=living_street],
+    [highway=track],
+    [highway=residential],
+    [highway=unclassified],
+    [highway=living_street],
+    [highway=primary],[highway=secondary],[highway=tertiary]{
+      text-position: 'path';
+      text-tag: 'name';
+      text-size: 8;
+      text-color: black;
+      text-halo-width: 1;
+      text-halo-color: white;
+    }
 
-    [highway=track]{
+    [highway=track],[highway=unclassified]{
       color: white;
       z-index: 110;
       line-width: 3;
@@ -104,10 +98,15 @@
       contour-width: 1;
     }
 
-    [highway=footway],[highway=pedestrian]{
+    [highway=path],[highway=footway],[highway=pedestrian]{
       color: #eee;
       contour-color: black;
       contour-width: 1;
+    }
+
+    [highway=path]{
+      z-index: 119;
+      line-width: 2;
     }
 
     [highway=footway]{
@@ -123,6 +122,7 @@
   }
 
   [zoom>=12]{
+
 
 
     [highway=service],[highway=living_street]{
@@ -181,12 +181,20 @@
     contour-width: 1;
   }
 
-  [highway=motorway],[highway=motorway_link]{
-    color: purple;
+  [highway=trunk],[highway=trunk_link]{
+    color: #FFC20D;
     z-index: 130;
-    line-width: 30;
-    contour-color: orange;
-    contour-width: 1;
+    line-width: 16;
+    contour-color: #FFE20D;
+    contour-width: 2;
+  }
+
+  [highway=motorway],[highway=motorway_link]{
+    color: #FF9B0D;
+    z-index: 130;
+    line-width: 16;
+    contour-color: #FFC90D;
+    contour-width: 2.5;
   }
 }
 
@@ -196,7 +204,7 @@
 
   [zoom>=8]{
     [railway=rail]{
-      color: darkgray;
+      color: #aaa;
       z-index: 110;
       line-width: 6;
     }
@@ -204,7 +212,7 @@
 
   [zoom>=15]{
     [railway=tram]{
-      color: darkgray;
+      color: #faa;
       z-index: 110;
       line-width: 0.8;
     }
@@ -220,10 +228,14 @@
 
 
   [landuse=farmland]{
-    fill-color: 'rgb(130,180,30)';
+    fill-color: @farmland;
     opacity: 1;
-    line-width: none;
-    color: cyan;
+  }
+  [natural=wood]{
+    fill-color: @wood;
+  }
+  [natural=scrub]{
+    fill-color: @scrub;
   }
 
 }
