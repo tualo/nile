@@ -16,7 +16,12 @@ select
         ST_PointOnSurface( ##way_column )
       )
     ,##transscale)
-  ,0) AS reprpoint
+  ,0) AS reprpoint,
+  ST_AsGeoJSON(
+    ST_TransScale(
+      ST_Envelope(##way_column)
+    ,##transscale)
+  ) as bbox
 FROM ##prefix_polygon
 WHERE
   ST_Intersects( ##way_column, ##srid )

@@ -5,7 +5,8 @@ SELECT
   ) AS data,
 z_order,
   hstore2json(cast(tags as hstore)) AS tags,
-  Null AS reprpoint
+  Null AS reprpoint,
+  Null As bbox
 FROM
   ##prefix_point
 WHERE
