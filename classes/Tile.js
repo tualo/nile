@@ -292,8 +292,9 @@ Tile.prototype.queryAsGeoJSON = function(callback){
           for(field in result[i]){
             if (
               (field !== 'data') ||
-              (field !== 'way') ||
-              (field !== 'reprpoint')
+              (field !== 'way')||
+              (field !== 'reprpoint')||
+              (field !== 'bbox')
             ){
               if (typeof result[i][field]==='string'){
                 json.properties[field] = result[i][field];
@@ -304,6 +305,9 @@ Tile.prototype.queryAsGeoJSON = function(callback){
 
         if (typeof result[i].reprpoint==='string'){
           json.reprpoint = (JSON.parse(result[i].reprpoint) ).coordinates;
+        }
+        if (typeof result[i].bbox==='string'){
+          json.bbox = (JSON.parse(result[i].bbox) ).coordinates;
         }
 
         data.features.push(json);
