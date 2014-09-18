@@ -24,14 +24,12 @@
   searches at the folowing paths for a config file.
 
   * /etc/nile/config.json
-  * <program-path>/config.json
-  * <program-path>/config/config.json
-  * <program-path>/config/sample.json
+  * ./config.json
+  * ./config/config.json
+  * ./config/sample.json
 
 # Run
 
   You can run the service by
 
     nile -s
-
-  
