@@ -17,7 +17,7 @@ program
     .description('nile n(ode) tileserver')
     .usage('[options]')
     .option('-s, --service', 'run the service')
-    .option('-g, --geocode', 'geocode a given adress')
+    .option('-g, --geocode <address>', 'geocode a given adress')
     .option('-c, --creategeocode', 'create or recreates the geocode index')
     .on('--help', help)
     .parse(process.argv);
@@ -26,6 +26,23 @@ if (program.service){
   showhelp = false;
 
   main.startup();
+}
+
+if (program.geocode){
+  showhelp = false;
+  main.init(function(system){
+    system.connect(function(err){
+      if (err){
+        system.logger.log('error',err);
+      }else{
+        var geocoder = new Geocoder(system);
+        geocoder.geoCode(program.geocode,function(err,res){
+          console.log(res);
+          system.disconnect();
+        });
+      }
+    });
+  });
 }
 
 if (program.creategeocode){
