@@ -52,6 +52,43 @@ var layers = [
   }
 ];
 
+/*
+var source = new ol.source.Vector();
+var vector = new ol.layer.Vector({
+  source: source,
+  style: new ol.style.Style({
+    fill: new ol.style.Fill({
+      color: 'rgba(255, 255, 255, 0.6)'
+    }),
+    stroke: new ol.style.Stroke({
+      color: 'rgba(255, 255, 255, 0.6)',
+      width: 5
+    }),
+    image: new ol.style.Circle({
+      radius: 7,
+      fill: new ol.style.Fill({
+        color: '#ffcc33'
+      })
+    })
+  })
+});
+*/
+
+var createPolygonStyleFunction = function() {
+  return function(feature, resolution) {
+    var style = new ol.style.Style({
+      stroke: new ol.style.Stroke({
+        color: 'rgba(0, 0, 255, 0.3)',
+        width: 5
+      }),
+      fill: new ol.style.Fill({
+        color: 'rgba(0, 0, 255, 0.1)'
+      }),
+      //text: createTextStyle(feature, resolution, myDom.polygons)
+    });
+    return [style];
+  };
+};
 
 function fillLayerList (layers){
   var i,res = [];
@@ -63,6 +100,7 @@ function fillLayerList (layers){
       source: new ol.source.XYZ(
         {
           url: './-/'+layers[i].style+'/{z}/{x}/{y}.png',
+          //tilePixelRatio: 2, // THIS IS IMPORTANT
           attributions: [
             new ol.Attribution({
               html: layers[i].title+' Tiles &copy; <a target="_blank" href="http://www.tualo.de/">tualo</a>'
@@ -73,63 +111,22 @@ function fillLayerList (layers){
     });
     res.push( layers[i].layer );
 
+
   }
+
+  res.push(
+    new ol.layer.Vector({
+      source: new ol.source.GeoJSON({
+        url: '/road'
+      }),
+      style: createPolygonStyleFunction()
+    })
+  );
+
+  //res.push(vector);
   return res;
 }
 
-
-/**
- * @constructor
- * @extends {ol.control.Control}
- * @param {Object=} opt_options Control options.
- */
-var LayerSwitcher = function(opt_options) {
-  var options = opt_options || {},
-      form = document.createElement('form'),
-      i,
-      input,
-      field,
-      self = this;
-
-  field = document.createElement('h1');
-  field.innerHTML = "Ebenen";
-  form.appendChild(field);
-
-  for(i = 0; i<layers.length; i++){
-    field = document.createElement('p');
-    field.innerHTML = layers[i].title;
-    input = document.createElement('input');
-    input.setAttribute('type','checkbox');
-    input.setAttribute('name','layerswitcher-'+layers[i].style);
-    input.setAttribute('value',layers[i].style);
-    if (layers[i].visible){
-      input.setAttribute('checked','checked');
-    }
-    input.targetLayer = layers[i].layer;
-    input.addEventListener('change',function(evt){
-      for(var i = 0; i<layers.length; i++){
-        if (layers[i].style === evt.srcElement.defaultValue){
-          layers[i].layer.setVisible(evt.srcElement.checked);
-        }
-      }
-    });
-    field.appendChild(input);
-    form.appendChild(field);
-  }
-
-
-  var element = document.createElement('div');
-  element.className = 'ol-layerswitcher ol-unselectable ol-control';
-  element.appendChild(form);
-  //element.innerHTML = "TEXT";
-  ol.control.Control.call(this, {
-    element: element,
-    target: options.target
-  });
-
-};
-
-ol.inherits(LayerSwitcher, ol.control.Control);
 
 
 var map = new ol.Map({
@@ -142,9 +139,12 @@ var map = new ol.Map({
   }).extend(
     [
       new ol.control.ScaleLine(),
-      //new ol.control.MousePosition(),
+      new ol.control.MousePosition(),
       //new ol.control.Control({element: document.getElementById('control')}),
       new LayerSwitcher({
+        autoHide: false
+      }),
+      new ZoomDisplay({
         autoHide: false
       })
     ]
@@ -160,3 +160,13 @@ var map = new ol.Map({
   })
 
 });
+
+/*
+var feature = new ol.Feature({
+  geometry: new ol.geom.LineString([[1228452.05,6617444.43],[1228440.74,6617469.61],[1228426.32,6617505.95],[1228420.51,6617520.99],
+  [1228405.66,6617564.29],[1228391.27,6617606.23],[1228384.62,6617624.71]]),
+  labelPoint: new ol.geom.Point([1228391.27,6617606.23]),
+  name: 'My Polygon'
+});
+source.addFeature(feature);
+*/

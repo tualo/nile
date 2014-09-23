@@ -186,7 +186,13 @@ Geocoder.prototype.isStreet = function(name,callback){
     }
   )
 }
-
+/*
+Finding city, street and housenumber of an given string array (each word as an item)
+@params {array} list the word list
+@params {function} the callback function to be called on error and success
+@params [{integer}] index optional, set by the function for recursive uses
+@params [{object}] result optional, set by the function for recursive uses
+*/
 Geocoder.prototype.analyse = function(list,callback,index,result){
   var self= this,
       i,
@@ -196,7 +202,8 @@ Geocoder.prototype.analyse = function(list,callback,index,result){
       city,
       housenumber,
       item,
-      itemIndex;
+      itemIndex,
+      numberCheck;
 
   if (typeof result==='undefined'){
     result = {};
@@ -205,6 +212,12 @@ Geocoder.prototype.analyse = function(list,callback,index,result){
 
   if (index<list.length){
     item = list[index];
+    numberCheck = list[index].match(/(\d+([\-\/\w])+)$/i);
+    if (numberCheck!==null){
+      housenumber = numberCheck[0];
+      list[index]=list[index].substring(0,list[index].length -numberCheck[0].length).trim();
+      item=list[index];
+    }
     if (typeof result[item]==='undefined'){
       result[item] = {
         text: item,
@@ -212,22 +225,28 @@ Geocoder.prototype.analyse = function(list,callback,index,result){
         isStreet: null,
         bestMatchStreet: '',
         streets: [],
-        bestMatchCity: ''
+        bestMatchCity: '',
+        housenumber: housenumber
       };
       index=0;
     }
 
+
+
     self.isStreet(list[index],function(err,res){
       if (err){
-        result[item].error=err;
+        callback(err);
       }else{
+        // /((\w+)\s?)+\s+(\d+.*)^/i
         //console.log(res);
         //todo linestring size matching
         result[item].isStreet=(res[0])?res[0].diff:99999;
         result[item].bestMatchStreet=(res[0])?res[0].name:'';
         result[item].streets = [];
+        result[item].housenumber = housenumber;
+
         for(i=0;i< res.length;i++){
-          if (res[i].diff < (item.length / 4)) {
+          if (res[i].diff < (item.length / 3)) {
             result[item].streets.push(res[i].name);
           }
         }
@@ -236,7 +255,7 @@ Geocoder.prototype.analyse = function(list,callback,index,result){
 
       self.isCity(list[index],function(err,res){
         if (err){
-          result[item].error=err;
+          callback(err);
         }else{
           result[item].isCity=(res[0])?res[0].diff:99999;
           result[item].bestMatchCity=(res[0])?res[0].name:'';
@@ -251,9 +270,9 @@ Geocoder.prototype.analyse = function(list,callback,index,result){
     h=false;
     for(itemIndex=0;itemIndex< list.length;itemIndex++){
       i=list[itemIndex];
-      if ((h) && (/^(\d)+/.test(i))){
-        housenumber = i;
-      }
+
+
+
       if (
         (result[i].isCity<result[i].isStreet)
       ){
@@ -271,11 +290,13 @@ Geocoder.prototype.analyse = function(list,callback,index,result){
 
         if (typeof street==='undefined'){
 
+          housenumber = result[i].housenumber;
+
           street = result[i].bestMatchStreet;
           streets = result[i].streets;
         }
 
-        h=true;
+        //h=true;
       }else{
         if (h){
           h=false;
@@ -292,124 +313,178 @@ Geocoder.prototype.analyse = function(list,callback,index,result){
 
 }
 
+Geocoder.prototype.selectStreets = function(streets,bounds,callback,index,result){
+  var self = this,
+      sql = "select tags->'name' as name,ST_AsGeoJSON(ST_PointOnSurface(ST_Union(way))) as simple_point , ST_AsGeoJSON(ST_Union(way)) way_line,'$geom' as citybound from planet_osm_line where tags->'highway'<>'' and tags->'name' in ($streets) and ST_Intersects(way,ST_GeomFromText('$geom',900913)) group by tags->'name'";
+
+  if (typeof index ==='undefined'){
+    index = 0;
+    result = [];
+  }
+  if (index < bounds.length){
+    self.system.client.query(
+      sql.replace(/\$geom/g,bounds[index].geom).replace(/\$streets/g, "'"+streets.join("','")+"'"),
+      function(err, roads){
+        if (err){
+          callback(err);
+        }else{
+          result = result.concat(result,roads.rows);
+          self.selectStreets(streets,bounds,callback,index+1,result);
+        }
+      }
+    );
+  }else{
+    callback(false,result);
+  }
+}
+
+Geocoder.prototype.exactAddress = function(gres,callback,index,result){
+  var self = this,
+      sql = "select ST_AsGeoJSON(ST_PointOnSurface(way)) as exact_point from planet_osm_polygon where tags->'addr:street' = '$street' and tags->'addr:housenumber' = '$housenumber' and ST_Intersects(way,ST_GeomFromText('$geom',900913)) ";
+
+  if (typeof index ==='undefined'){
+    index = 0;
+    result = [];
+  }
+  if (index < gres.streets.length){
+    sql = sql.replace(/\$geom/g,gres.streets[index].citybound).replace(/\$housenumber/g,gres.housenumber).replace(/\$street/g, gres.streets[index].name);
+    self.system.client.query(
+      sql,
+      function(err, pointResult){
+        if (err){
+          callback(err);
+        }else{
+          if (pointResult.rows.length>0){
+            gres.streets[index].exact_point = pointResult.rows[0].exact_point;
+          }
+          self.exactAddress(gres,callback,index+1,result);
+        }
+      }
+    );
+  }else{
+    callback(false,gres);
+  }
+}
+
+
+Geocoder.prototype.nextLowerAddress = function(gres,callback,index,result){
+  var self = this,
+      sql = "select ST_AsGeoJSON(ST_PointOnSurface(way)) as next_lower,tags->'addr:housenumber' as housenumber from planet_osm_polygon where tags->'addr:street' = '$street' and tags->'addr:housenumber' < '$housenumber' and ST_Intersects(way,ST_GeomFromText('$geom',900913)) order by housenumber desc";
+
+  if (typeof index ==='undefined'){
+    index = 0;
+    result = [];
+  }
+  if (index < gres.streets.length){
+    sql = sql.replace(/\$geom/g,gres.streets[index].citybound).replace(/\$housenumber/g,gres.housenumber).replace(/\$street/g, gres.streets[index].name);
+    self.system.client.query(
+      sql,
+      function(err, pointResult){
+        if (err){
+          callback(err);
+        }else{
+          if (pointResult.rows.length>0){
+            gres.streets[index].next_lower = pointResult.rows[0].next_lower;
+            gres.streets[index].next_lower_number = pointResult.rows[0].housenumber;
+          }
+          self.nextLowerAddress(gres,callback,index+1,result);
+        }
+      }
+    );
+  }else{
+    callback(false,gres);
+  }
+}
+
+
+Geocoder.prototype.nextUpperAddress = function(gres,callback,index,result){
+  var self = this,
+      sql = "select ST_AsGeoJSON(ST_PointOnSurface(way)) as next_upper,tags->'addr:housenumber' as housenumber from planet_osm_polygon where tags->'addr:street' = '$street' and tags->'addr:housenumber' > '$housenumber' and ST_Intersects(way,ST_GeomFromText('$geom',900913)) order by housenumber asc";
+
+  if (typeof index ==='undefined'){
+    index = 0;
+    result = [];
+  }
+  if (index < gres.streets.length){
+    sql = sql.replace(/\$geom/g,gres.streets[index].citybound).replace(/\$housenumber/g,gres.housenumber).replace(/\$street/g, gres.streets[index].name);
+    self.system.client.query(
+      sql,
+      function(err, pointResult){
+        if (err){
+          callback(err);
+        }else{
+          if (pointResult.rows.length>0){
+            gres.streets[index].next_upper = pointResult.rows[0].next_upper;
+            gres.streets[index].next_upper_number = pointResult.rows[0].housenumber;
+          }
+          self.nextUpperAddress(gres,callback,index+1,result);
+        }
+      }
+    );
+  }else{
+    callback(false,gres);
+  }
+}
+
 Geocoder.prototype.geoCode = function(address,callback){
   var i,
       self = this,
-      parts = address.split(' ');
-
-  self.analyse(parts,callback);
-  /*
-  self._findBounds(address,function(err,bounds){
-    //console.log(bounds);
-    self._findRoadInBounds(address,bounds,function(err,res){
-      //console.log(res);
-      callback(false,res);
-    })
-  })
-*/
-  /*
-  create table gc_cities (name varchar(255) primary key,metaphone varchar(255));
-  delete from gc_cities;
-  insert
-    into gc_cities (name,metaphone)
-    select
-      tags->'name',
-      dmetaphone(tags->'name')
-    from planet_osm_polygon
-    where
-      tags->'name'<>'' and
-      tags->'boundary'='administrative'
-    group by tags->'name';
-
-  create table gc_streets (name varchar(255) primary key,metaphone varchar(255));
-  insert into gc_streets (name,metaphone)
-    select
-      tags->'name',
-      dmetaphone(tags->'name')
-    from
-      planet_osm_line
-    where
-      tags->'highway'<>'' and tags->'name'<>''
-  group by tags->'name';
-  */
-}
-
-Geocoder.prototype._findBounds = function(address,callback,parts,index,res){
-  var i,
-      self= this,
-      sql = (fs.readFileSync(path.join(__dirname,'geocode','find.sql'))).toString();
-
-  if (typeof index==='undefined'){
-    parts = address.split(' ');
-    index = 0;
-    res = [];
+      sql = (fs.readFileSync(path.join(__dirname,'geocode','query.street.loaction.sql'))).toString(),
+      parts = address.split(',');
+  for(i=0;i<parts.length;i++){
+    parts[i] = parts[i].replace(/^(\s)+/,'').replace(/(\s)+$/,'');
   }
-  if (index<parts.length){
-    self.system.client.query(
-      sql.replace(/\$search/g,parts[index]),
-      function(err, results){
-        //console.log(results.rows);
-        for(i=0;i<results.rows.length;i++){
-          if (results.rows[i].boundary==='administrative'){
-            res.push(results.rows[i]);
+  self.analyse(parts,function(err,res){
+    if (err){
+        callback(err);
+    }else{
+      if (res.city !== '' ){
+        sql = "select ST_AsText(way) geom from planet_osm_polygon where tags->'boundary'='administrative' and tags->'name'='$city'";
+        self.system.client.query(
+          sql.replace(/\$city/g,res.city).replace(/\$streets/g, "'"+res.streets.join("','")+"'"),
+          function(err, city_bounds){
+            if (err){
+              callback(err);
+            }else{
+
+              if (res.street !== '' ){
+                self.selectStreets(res.streets,city_bounds.rows,function(err,roads){
+                  self.exactAddress(
+                    {
+                      housenumber: res.housenumber,
+                      city: res.city,
+                      streets: roads
+                    },
+                    function(err,gres){
+                      if (err){
+                        callback(err);
+                      }else{
+                        self.nextUpperAddress(gres,function(err,gres){
+                          if (err){
+                            callback(err);
+                          }else{
+                            self.nextLowerAddress(gres,function(err,gres){
+                              if (err){
+                                callback(err);
+                              }else{
+                                callback(err,gres);
+                              }
+                            })
+                          }
+                        })
+                      }
+                    }
+                  )
+
+                })
+              }
+            }
           }
-        }
-        self._findBounds(address,callback,parts,index+1,res);
+        );
+
       }
-    );
-  }else{
-    callback(false,res);
-  }
-
-}
-
-
-
-Geocoder.prototype._findRoadInBounds= function(address,boundaries,callback,index,res){
-  var self=this;
-  if (typeof index==='undefined'){
-    res=[];
-    index=0;
-  }
-  if (index < boundaries.length){
-    self._findRoadInBound(address,boundaries[index].way,function(err,list){
-      //console.log('*',list);
-      res = res.concat(list);
-      self._findRoadInBounds(address,boundaries,callback,index+1,res);
-    })
-  }else{
-    callback(false,res);
-  }
-
-}
-
-Geocoder.prototype._findRoadInBound= function(address,boundary,callback,parts,index,res){
-  var i,
-      self= this,
-      sql = (fs.readFileSync(path.join(__dirname,'geocode','find.road.sql'))).toString();
-
-  if (typeof index==='undefined'){
-    parts = address.split(' ');
-    index = 0;
-    res = [];
-  }
-  if (index<parts.length){
-    console.log(sql.replace(/\$search/g,parts[index]).replace(/\$boundary/g,boundary));
-    self.system.client.query(
-      sql.replace(/\$search/g,parts[index]).replace(/\$boundary/g,boundary),
-      function(err, results){
-        //console.log(err);
-        for(i=0;i<results.rows.length;i++){
-          //if (results.rows[i].boundary==='administrative'){
-            res.push(results.rows[i]);
-          //}
-        }
-        self._findRoadInBound(address,boundary,callback,parts,index+1,res);
-      }
-    );
-  }else{
-    callback(false,res);
-  }
+    }
+  });
 
 }
 
