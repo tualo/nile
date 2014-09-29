@@ -1,5 +1,10 @@
 var layers = [
   {
+    title: 'Clean',
+    style: 'clean',
+    visible: false
+  },
+  {
     title: 'Standard',
     style: 'mystyle',
     visible: true

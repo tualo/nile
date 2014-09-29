@@ -206,13 +206,15 @@ Geocoder.prototype.analyse = function(list,callback,index,result){
       numberCheck;
 
   if (typeof result==='undefined'){
-    result = {};
+    result = {
+      streets: []
+    };
     index=0;
   }
 
   if (index<list.length){
     item = list[index];
-    numberCheck = list[index].match(/(\d+([\-\/\w])+)$/i);
+    numberCheck = list[index].match(/(\d+([\-\/\w])*)$/i);
     if (numberCheck!==null){
       housenumber = numberCheck[0];
       list[index]=list[index].substring(0,list[index].length -numberCheck[0].length).trim();
@@ -315,7 +317,7 @@ Geocoder.prototype.analyse = function(list,callback,index,result){
 
 Geocoder.prototype.selectStreets = function(streets,bounds,callback,index,result){
   var self = this,
-      sql = "select tags->'name' as name,ST_AsGeoJSON(ST_PointOnSurface(ST_Union(way))) as simple_point , ST_AsGeoJSON(ST_Union(way)) way_line,'$geom' as citybound from planet_osm_line where tags->'highway'<>'' and tags->'name' in ($streets) and ST_Intersects(way,ST_GeomFromText('$geom',900913)) group by tags->'name'";
+      sql = "select tags->'name' as name,   ST_AsGeoJSON(ST_StartPoint( ST_Union(way))) as start_point, ST_AsGeoJSON(ST_EndPoint( ST_Union(way))) as stop_point, ST_AsGeoJSON(ST_PointOnSurface(ST_Union(way))) as simple_point , ST_AsGeoJSON(ST_Union(way)) way_line,'$geom' as citybound from planet_osm_line where tags->'highway'<>'' and tags->'name' in ($streets) and ST_Intersects(way,ST_GeomFromText('$geom',900913)) group by tags->'name'";
 
   if (typeof index ==='undefined'){
     index = 0;
@@ -429,6 +431,14 @@ Geocoder.prototype.nextUpperAddress = function(gres,callback,index,result){
 Geocoder.prototype.geoCode = function(address,callback){
   var i,
       self = this,
+      a,
+      b,
+      next,
+      prev,
+      nextnr,
+      prevnr,
+      ratio,
+      aprox,
       sql = (fs.readFileSync(path.join(__dirname,'geocode','query.street.loaction.sql'))).toString(),
       parts = address.split(',');
   for(i=0;i<parts.length;i++){
@@ -439,6 +449,9 @@ Geocoder.prototype.geoCode = function(address,callback){
         callback(err);
     }else{
       if (res.city !== '' ){
+        if (typeof res.streets==='undefined'){
+          res.streets=[];
+        }
         sql = "select ST_AsText(way) geom from planet_osm_polygon where tags->'boundary'='administrative' and tags->'name'='$city'";
         self.system.client.query(
           sql.replace(/\$city/g,res.city).replace(/\$streets/g, "'"+res.streets.join("','")+"'"),
@@ -467,6 +480,47 @@ Geocoder.prototype.geoCode = function(address,callback){
                               if (err){
                                 callback(err);
                               }else{
+
+                                for(i=0;i<gres.streets.length;i++){
+
+delete gres.streets[i].way_line;
+delete gres.streets[i].citybound;
+                                  if (typeof gres.streets[i].exact_point==='undefined'){
+                                    try{
+                                      //if (gres.streets[i].next_lower)
+                                      prev = JSON.parse(gres.streets[i].next_lower).coordinates;
+                                      next = JSON.parse(gres.streets[i].next_upper).coordinates;
+
+                                      prevnr = gres.streets[i].next_lower_number*1;
+                                      nextnr = gres.streets[i].next_upper_number*1;
+
+                                      ratio = (gres.housenumber - prevnr)/(nextnr - prevnr) ;
+
+                                      a = (prev[1]-next[1])/(prev[0]-next[0]);
+                                      b = prev[1] - a*prev[0];
+
+                                      aprox = [
+                                        prev[0] + (next[0]-prev[0])*ratio,
+                                        a*( prev[0] +  ( next[0]-prev[0])*ratio ) +b
+                                      ];
+
+                                      gres.streets[i].aprox_point = {
+                                        type: 'Point',
+                                        coordinates: aprox
+                                      };
+                                    }catch(e){
+                                      console.log('geocoder.js (line:504)',address,e,gres);
+
+                                    }
+
+
+                                  }else{
+
+                                    gres.streets[i].exact_point = JSON.parse(gres.streets[i].exact_point);
+                                  }
+                                  gres.streets[i].simple_point = JSON.parse(gres.streets[i].simple_point);
+                                  //console.log(aprox,ratio);
+                                }
                                 callback(err,gres);
                               }
                             })

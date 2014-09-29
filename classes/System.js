@@ -8,8 +8,10 @@ path = require('path'),
 //MapCSS = require('node-kothic').MapCSS,
 //Kothic = require('node-kothic').Kothic,
 Tile = require('./Tile').Tile,
+Geocoder = require('./Geocoder').Geocoder,
 express = require('express'),
 glob = require("glob"),
+bodyparser = require('body-parser'),
 mkdirp = require("mkdirp"),
 Renderer =  require('nile-style').Renderer,
 StyleInstructions =  require('nile-style').StyleInstructions;
@@ -130,6 +132,16 @@ System.prototype.startHTTPService = function(){
   self.app.use(express.static(path.join(__dirname ,'..', 'public')));
   self.app.set('views', path.join(__dirname ,'..', 'template'));
   self.app.set('view engine', 'jade');
+
+  self.app.all('*',function(req,res,next){
+    res.header('Access-Control-Allow-Origin','*');
+    res.header('Access-Control-Allow-Headers','X-Requested-With');
+    next();
+  });
+
+  self.app.use(bodyparser.urlencoded({ extended: false }));
+  self.app.use(bodyparser.json());
+
   self.app.route('/').get(function(req,res,next){
     return res.render('index',{});
   });
@@ -169,6 +181,18 @@ System.prototype.startHTTPService = function(){
 });
 
 });
+  self.app.route('/geocode').post(function(req,res,next){
+
+    var geocoder = new Geocoder(self);
+    geocoder.geoCode(req.body.address,function(err,result){
+      if (err){
+        res.json(err);
+      }else{
+        res.json(result);
+      }
+    });
+
+  });
 
   self.app.route('/live/:style/:zoom/:x/:y.png').get(function(req,res,next){
 

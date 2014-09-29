@@ -1,0 +1,298 @@
+
+// Fonts //
+@sans: 'Source Sans Pro Regular';
+@sans_italic: 'Source Sans Pro Italic';
+@sans_bold: 'Source Sans Pro Semibold';
+
+// Common Colors //
+@land: #fefefe;
+@water: 'rgb(210,210,255)';
+
+@mainroad: 'rgb(255,250,190)';
+@builings: 'rgb(210,222,222)';
+
+@farmland: 'rgb(210,222,100)';
+@wood: 'rgb(20,122,42)';
+@scrub: 'rgb(60,162,82)';
+
+@landuse_residential: 'rgb(230,230,240)';
+@highway_trunk: 'rgb(255,167,100)';
+.Map {
+  fill-color: @land;
+}
+
+.Polygon{
+  z-index: 10;
+  [zoom>=9][zoom<=12]{
+    [landuse=residential]{
+      fill-color: @landuse_residential;
+      z-index: 50;
+    }
+    [landuse=wood],[landuse=forest]{
+      fill-color: @wood;
+    }
+  }
+}
+
+// RAILWAY //
+.Line {
+  z-index: 80;
+
+  [zoom>=9]{
+    [railway=rail]{
+      color: #aaa;
+      z-index: 85;
+      line-width: 6;
+    }
+  }
+
+  [zoom>=15]{
+    [railway=tram]{
+      color: #faa;
+      z-index: 90;
+      line-width: 1.2;
+    }
+  }
+}
+
+
+// WATER //
+.Line {
+  [zoom>=8]{
+    [natural=water],[water=river],[water=riverbank],[water=weir],[water=reservoir],[water=lake],[water=pond],
+    [waterway=river],[waterway=weir],[waterway=reservoir],[waterway=lake],[waterway=pond]{
+      color: 'rgb(210,210,255)';
+      line-width: 10;
+      text-position: 'path';
+      text-tag: 'name';
+      text-size: 8;
+      text-color: blue;
+      text-halo-width: 0.5;
+      text-halo-color: white;
+
+    }
+  }
+}
+
+.Polygon{
+  [zoom>=8]{
+    [natural=water],[water=river],[water=riverbank],[water=weir],
+    [water=reservoir],[water=lake],[water=pond]{
+      fill-color: 'rgb(210,210,255)';
+      color: @water;
+      line-width: 10;
+      text-position: 'path';
+      text-tag: 'name';
+      text-size: 50%;
+      //text-opacity: 0.5;//
+      text-color: blue;
+      text-halo-width: 0.5;
+      text-halo-color: white;
+    }
+  }
+}
+// ### WATER //
+
+
+// ROADS
+// postgres -D /usr/local/var/postgres
+
+.Line {
+  z-index: 10;
+  [zoom>=9]{
+
+
+    [highway=trunk],[highway=trunk_link]{
+      color: @highway_trunk;
+      z-index: 130;
+      line-width: 16;
+      contour-color: black;
+      contour-width: 2;
+    }
+
+    [highway=motorway],[highway=motorway_link]{
+      color: #FF9B0D;
+      z-index: 135;
+      line-width: 16;
+      contour-color: black;
+      contour-width: 2.5;
+    }
+
+
+  }
+
+  [zoom>=12]{
+
+    [highway=primary],[highway=secondary],[highway=tertiary],
+    [highway=primary_link],[highway=secondary_link],[highway=tertiary_link],
+    [highway=trunk],[highway=trunk_link],
+    [highway=motorway],[highway=motorway_link]{
+      color: #FFFEFD;
+      z-index: 101;
+      line-width: 2;
+      contour-color: black;
+      contour-width: 1;
+    }
+
+
+
+
+    [highway=primary],[highway=secondary],[highway=tertiary],
+    [highway=primary_link],[highway=secondary_link],[highway=tertiary_link]{
+      z-index: 103;
+      line-width: 14;
+    }
+
+
+
+    [highway=trunk],[highway=trunk_link]{
+      color: #FFC20D;
+      z-index: 130;
+      line-width: 16;
+      contour-color: black;
+      contour-width: 2;
+    }
+
+    [highway=motorway],[highway=motorway_link]{
+      color: #FF9B0D;
+      z-index: 135;
+      line-width: 16;
+      contour-color: black;
+      contour-width: 2.5;
+    }
+
+
+
+    } // [zoom>=12]
+
+
+    [zoom>=14]{
+
+      [highway=ALL]{
+        color: #FFFEFD;
+        z-index: 101;
+        line-width: 2;
+        contour-color: black;
+        contour-width: 1;
+      }
+
+      [highway=track],[highway=footway],[highway=path]{
+        z-index: 102;
+        line-width: 4;
+      }
+
+
+
+      [highway=service],[highway=living_street],
+      [highway=unclassified],[highway=residential]{
+        z-index: 103;
+        line-width: 10;
+      }
+
+      [highway=primary],[highway=secondary],[highway=tertiary],
+      [highway=primary_link],[highway=secondary_link],[highway=tertiary_link]{
+        z-index: 103;
+        line-width: 14;
+      }
+
+
+
+      [highway=trunk],[highway=trunk_link]{
+        color: #FFC20D;
+        z-index: 130;
+        line-width: 16;
+        contour-color: black;
+        contour-width: 2;
+      }
+
+      [highway=motorway],[highway=motorway_link]{
+        color: #FF9B0D;
+        z-index: 135;
+        line-width: 16;
+        contour-color: black;
+        contour-width: 2.5;
+      }
+
+
+      [bridge=yes]{
+        contour-color: black;
+        contour-width: 2;
+      }
+
+      [tunnel=yes]{
+        opacity: 0.9;
+        contour-color: blue;
+        contour-width: 1;
+      }
+
+      } // [zoom>=14]
+
+      [zoom>=16]{
+
+        [highway=ALL]{
+          color: #FFFEFD;
+          z-index: 101;
+          line-width: 2;
+          contour-color: black;
+          contour-width: 1;
+          text-position: 'path';
+          text-tag: 'name';
+          text-size: 14;
+          text-color: white;
+          text-halo-width: 1.5;
+          text-halo-color: black;
+
+
+        }
+
+        [highway=track],[highway=footway],[highway=path]{
+          z-index: 102;
+          line-width: 4;
+        }
+
+
+
+        [highway=service],[highway=living_street],
+        [highway=unclassified],[highway=residential]{
+          z-index: 103;
+          line-width: 10;
+        }
+
+        [highway=primary],[highway=secondary],[highway=tertiary],
+        [highway=primary_link],[highway=secondary_link],[highway=tertiary_link]{
+          z-index: 103;
+          line-width: 14;
+        }
+
+
+
+        [highway=trunk],[highway=trunk_link]{
+          color: #FFC20D;
+          z-index: 130;
+          line-width: 16;
+          contour-color: black;
+          contour-width: 2;
+        }
+
+        [highway=motorway],[highway=motorway_link]{
+          color: #FF9B0D;
+          z-index: 135;
+          line-width: 16;
+          contour-color: black;
+          contour-width: 2.5;
+        }
+
+
+        [bridge=yes]{
+          contour-color: black;
+          contour-width: 2;
+        }
+
+        [tunnel=yes]{
+          opacity: 0.9;
+          contour-color: blue;
+          contour-width: 1;
+        }
+
+      }
+    }

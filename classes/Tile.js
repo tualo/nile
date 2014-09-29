@@ -142,9 +142,9 @@ Tile.prototype.sqlQuery = function(name){
 
 Tile.prototype.getDatabaseQuery = function(){
   var sql = [
-  this.sqlQuery('polygon'),
-  this.sqlQuery('line'),
-  this.sqlQuery('point')
+    this.sqlQuery('polygon'),
+    this.sqlQuery('line'),
+    this.sqlQuery('point')
   ];
   //sql.push(this.__getDatabaseQuery());
   return sql.join(' UNION ') + '  LIMIT 100000';
@@ -282,7 +282,7 @@ Tile.prototype.queryAsGeoJSON = function(callback){
           && (result[i].tags.substr(0,1)==='{')
         ){
           var p = JSON.parse(result[i].tags);
-
+          p.zorder = result[i].z_order;
           json.properties = p;
         }else{
 
