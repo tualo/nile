@@ -279,7 +279,7 @@ Geocoder.prototype.analyse = function(list,callback,index,result){
 
   }else{
     h=false;
-//    console.log(JSON.stringify(result));
+    console.log(JSON.stringify(result));
 
     for(itemIndex=0;itemIndex< list.length;itemIndex++){
       i=list[itemIndex];
@@ -463,7 +463,7 @@ Geocoder.prototype.geoCode = function(address,callback){
     if (err){
         callback(err);
     }else{
-      if (res.city !== '' ){
+      if ( (typeof res.city !== 'undefined' ) && (res.city !== '' )){
         if (typeof res.streets==='undefined'){
           res.streets=[];
         }
