@@ -114,10 +114,13 @@ Geocoder.prototype.isCity = function(name,callback){
       res_list=[],
       exact_res_list=[],
       len=name.length;
-  sql ="select name,metaphone,levenshtein(lower(name),lower( '"+name+"' )) as lv from gc_cities where metaphone like concat('%',  dmetaphone('"+name+"'),  '%') order by lv asc";
+  //sql ="select name,metaphone,levenshtein(lower(name),lower( '"+name+"' )) as lv from gc_cities where metaphone like concat('%',  dmetaphone('"+name+"'),  '%') order by lv asc";
+  sql ="select name,metaphone,levenshtein(lower(name),lower( '"+name+"' )) as lv from gc_cities where metaphone =  metaphone('"+name+"',10) order by lv asc";
+  console.time('is city '+name);
   self.system.client.query(
     sql,
     function(err, results){
+      console.timeEnd('is city '+name);
       if (err){
         callback(err);
       }else{
@@ -156,10 +159,17 @@ Geocoder.prototype.isStreet = function(name,callback){
       exact_res_list=[],
       len=name.length;
 
-  sql ="select name,metaphone,levenshtein(lower(name),lower( '"+name+"' )) as lv from gc_streets where metaphone like concat('%',  dmetaphone('"+name+"'),  '%') order by lv asc";
+  //sql ="select name,metaphone,levenshtein(lower(name),lower( '"+name+"' )) as lv from gc_streets where metaphone like concat('%',  dmetaphone('"+name+"'),  '%') order by lv asc";
+  // todo find faster indices
+  sql ="select name,metaphone,levenshtein(lower(name),lower( '"+name+"' )) as lv from gc_streets where metaphone = metaphone('"+name+"',10) order by lv asc";
+
+  console.time('is street '+name);
+  console.log('explain analyze',sql);
   self.system.client.query(
     sql,
     function(err, results){
+      console.timeEnd('is street '+name);
+      //console.log(results.rows);
       if (err){
         callback(err);
       }else{
@@ -240,7 +250,6 @@ Geocoder.prototype.analyse = function(list,callback,index,result){
         callback(err);
       }else{
         // /((\w+)\s?)+\s+(\d+.*)^/i
-        //console.log(res);
         //todo linestring size matching
         result[item].isStreet=(res[0])?res[0].diff:99999;
         result[item].bestMatchStreet=(res[0])?res[0].name:'';
@@ -248,7 +257,7 @@ Geocoder.prototype.analyse = function(list,callback,index,result){
         result[item].housenumber = housenumber;
 
         for(i=0;i< res.length;i++){
-          if (res[i].diff < (item.length / 3)) {
+          if (res[i].diff < (item.length )) {
             result[item].streets.push(res[i].name);
           }
         }
@@ -270,6 +279,8 @@ Geocoder.prototype.analyse = function(list,callback,index,result){
 
   }else{
     h=false;
+//    console.log(JSON.stringify(result));
+
     for(itemIndex=0;itemIndex< list.length;itemIndex++){
       i=list[itemIndex];
 
@@ -444,7 +455,9 @@ Geocoder.prototype.geoCode = function(address,callback){
   for(i=0;i<parts.length;i++){
     parts[i] = parts[i].replace(/^(\s)+/,'').replace(/(\s)+$/,'');
   }
+  console.time('analyse '+address);
   self.analyse(parts,function(err,res){
+    console.timeEnd('analyse '+address);
     if (err){
         callback(err);
     }else{
@@ -452,16 +465,22 @@ Geocoder.prototype.geoCode = function(address,callback){
         if (typeof res.streets==='undefined'){
           res.streets=[];
         }
-        sql = "select ST_AsText(way) geom from planet_osm_polygon where tags->'boundary'='administrative' and tags->'name'='$city'";
+        sql = "select ST_AsText(way) geom from planet_osm_polygon where boundary='administrative' and tags->'name'='$city'";
+        console.time('city_bounds '+address);
         self.system.client.query(
           sql.replace(/\$city/g,res.city).replace(/\$streets/g, "'"+res.streets.join("','")+"'"),
           function(err, city_bounds){
+            console.timeEnd('city_bounds '+address);
             if (err){
               callback(err);
             }else{
 
               if (res.street !== '' ){
+                console.time('streets '+address);
                 self.selectStreets(res.streets,city_bounds.rows,function(err,roads){
+                  console.timeEnd('streets '+address);
+
+                  console.time('exactAddress '+address);
                   self.exactAddress(
                     {
                       housenumber: res.housenumber,
@@ -469,6 +488,7 @@ Geocoder.prototype.geoCode = function(address,callback){
                       streets: roads
                     },
                     function(err,gres){
+                      console.timeEnd('exactAddress '+address);
                       if (err){
                         callback(err);
                       }else{
@@ -487,7 +507,16 @@ delete gres.streets[i].way_line;
 delete gres.streets[i].citybound;
                                   if (typeof gres.streets[i].exact_point==='undefined'){
                                     try{
-                                      //if (gres.streets[i].next_lower)
+                                      if (typeof gres.streets[i].next_lower==='undefined'){
+                                        gres.streets[i].next_lower = gres.streets[i].start_point;
+                                        gres.streets[i].next_lower_number=1;
+                                      }
+
+                                      if (typeof gres.streets[i].next_upper==='undefined'){
+                                        gres.streets[i].next_upper = gres.streets[i].stop_point;
+                                        gres.streets[i].next_upper_number=50;
+                                      }
+                                      
                                       prev = JSON.parse(gres.streets[i].next_lower).coordinates;
                                       next = JSON.parse(gres.streets[i].next_upper).coordinates;
 
