@@ -335,8 +335,10 @@ Geocoder.prototype.selectStreets = function(streets,bounds,callback,index,result
     result = [];
   }
   if (index < bounds.length){
+    sql = sql.replace(/\$geom/g,bounds[index].geom).replace(/\$streets/g, "'"+streets.join("','")+"'");
+    console.log(sql);
     self.system.client.query(
-      sql.replace(/\$geom/g,bounds[index].geom).replace(/\$streets/g, "'"+streets.join("','")+"'"),
+      sql,
       function(err, roads){
         if (err){
           callback(err);
@@ -516,7 +518,7 @@ delete gres.streets[i].citybound;
                                         gres.streets[i].next_upper = gres.streets[i].stop_point;
                                         gres.streets[i].next_upper_number=50;
                                       }
-                                      
+
                                       prev = JSON.parse(gres.streets[i].next_lower).coordinates;
                                       next = JSON.parse(gres.streets[i].next_upper).coordinates;
 

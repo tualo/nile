@@ -1,6 +1,4 @@
 create extension fuzzystrmatch;
-create index idx_poly_boundary on planet_osm_polygon using gist(way) where boundary is not null;
-
 
 /*
 create index idx_poly_exact_addr on planet_osm_polygon using gist(way) where
@@ -32,3 +30,9 @@ insert into gc_streets (name,metaphone)
   where
     tags->'highway'<>'' and tags->'name'<>''
 group by tags->'name';
+
+
+create index idx_poly_boundary on planet_osm_polygon using gist(way) where boundary is not null;
+create index idx_poly_city_boundary on planet_osm_polygon(boundary,name) where boundary is not null and name is not null;
+create index idx_mp_gc_cities on gc_cities(metaphone);
+create index idx_mp_gc_streets on gc_streets(metaphone);
