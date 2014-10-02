@@ -467,10 +467,10 @@ Geocoder.prototype.geoCode = function(address,callback){
         if (typeof res.streets==='undefined'){
           res.streets=[];
         }
-        sql = "select ST_AsText(way) geom from planet_osm_polygon where boundary='administrative' and tags->'name'='$city'";
+        sql = "select ST_AsText(way) geom from planet_osm_polygon where boundary='administrative' and name='$city'";
         console.time('city_bounds '+address);
         sql = sql.replace(/\$city/g,res.city).replace(/\$streets/g, "'"+res.streets.join("','")+"'");
-        console.log(sql);
+        console.log(res,sql);
 
         self.system.client.query(
           sql,
