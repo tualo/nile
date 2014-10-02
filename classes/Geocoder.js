@@ -469,8 +469,11 @@ Geocoder.prototype.geoCode = function(address,callback){
         }
         sql = "select ST_AsText(way) geom from planet_osm_polygon where boundary='administrative' and tags->'name'='$city'";
         console.time('city_bounds '+address);
+        sql = sql.replace(/\$city/g,res.city).replace(/\$streets/g, "'"+res.streets.join("','")+"'");
+        console.log(sql);
+
         self.system.client.query(
-          sql.replace(/\$city/g,res.city).replace(/\$streets/g, "'"+res.streets.join("','")+"'"),
+          sql,
           function(err, city_bounds){
             console.timeEnd('city_bounds '+address);
             if (err){
