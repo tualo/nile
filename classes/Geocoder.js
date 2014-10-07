@@ -23,7 +23,9 @@ Geocoder.prototype.geoCode = function(address,callback){
   json;
 
   child = exec(self.system.config.nominatim+' --search "'+address+'"', function (error, stdout, stderr) {
-    console.log('exec: ',error,stdout,stderr);
+    if (self.debug){
+      console.log('exec: ',error,stdout,stderr);
+    }
     if (error){
       callback(error);
     }else{
