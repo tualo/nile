@@ -19,6 +19,7 @@ var Geocoder = function(system,debug){
 Geocoder.prototype.geoCode = function(address,callback){
 
   var child,
+  self = this,
   json;
 
   child = exec(self.system.config.nominatim+' --search "'+address+'"', function (error, stdout, stderr) {
