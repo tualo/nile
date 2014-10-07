@@ -34,6 +34,7 @@ group by  name ;
 
 create index idx_poly_boundary on planet_osm_polygon using gist(way) where boundary is not null;
 create index idx_poly_city_boundary on planet_osm_polygon(boundary,name) where boundary is not null and name is not null;
+create index idx_poly_name on planet_osm_polygon using gist(name) where name is not null;
 create index idx_line_name_highway on planet_osm_line(highway,name) where highway is not null and name is not null;
 create index idx_mp_gc_cities on gc_cities(metaphone);
 create index idx_mp_gc_streets on gc_streets(metaphone);

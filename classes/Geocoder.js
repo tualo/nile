@@ -455,6 +455,12 @@ Geocoder.prototype.geoCode = function(address,callback){
                                   delete gres.streets[i].citybound;
                                   if (typeof gres.streets[i].exact_point==='undefined'){
                                     try{
+                                      if (gres.streets[i].stop_point===null){
+                                          gres.streets[i].stop_point= JSON.parse(gres.streets[i].simple_point);
+                                      }
+                                      if (gres.streets[i].start_point===null){
+                                          gres.streets[i].start_point= JSON.parse(gres.streets[i].simple_point);
+                                      }
                                       if (typeof gres.streets[i].next_lower==='undefined'){
                                         gres.streets[i].next_lower = gres.streets[i].start_point;
                                         gres.streets[i].next_lower_number=1;
@@ -471,20 +477,23 @@ Geocoder.prototype.geoCode = function(address,callback){
                                       prevnr = gres.streets[i].next_lower_number*1;
                                       nextnr = gres.streets[i].next_upper_number*1;
 
-                                      ratio = (gres.housenumber - prevnr)/(nextnr - prevnr) ;
+                                      ratio = (parseInt( gres.housenumber ) - prevnr)/(nextnr - prevnr) ;
 
                                       a = (prev[1]-next[1])/(prev[0]-next[0]);
                                       b = prev[1] - a*prev[0];
 
                                       aprox = [
-                                      prev[0] + (next[0]-prev[0])*ratio,
-                                      a*( prev[0] +  ( next[0]-prev[0])*ratio ) +b
+                                        prev[0] + (next[0]-prev[0])*ratio,
+                                        a*( prev[0] +  ( next[0]-prev[0])*ratio ) +b
                                       ];
 
                                       gres.streets[i].aprox_point = {
                                         type: 'Point',
                                         coordinates: aprox
                                       };
+                                      //if (aprox[0]==null){
+                                        //console.log('null error ','ratio',ratio,'a',a,'b',b,'p0',prev[0],'p1',prev[1]);
+                                      //}
                                     }catch(e){
                                       if (self.debug){
                                         console.log('geocoder.js (line:504)',address,e,gres);
