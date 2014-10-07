@@ -377,7 +377,7 @@ Geocoder.prototype.nextUpperAddress = function(gres,callback,index,result){
 Geocoder.prototype.geoCode = function(address,callback){
 
 var child;
-child = exec('php /root/Nominatim-2.3.0/utils/query.php "'+address+'"', function (error, stdout, stderr) {
+child = exec('php /root/Nominatim-2.3.0/utils/query.php --search "'+address+'"', function (error, stdout, stderr) {
   console.log('exec: ',error,stdout,stderr);
 if (error !== null) {
   callback(error,stdout);
