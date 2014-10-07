@@ -312,18 +312,19 @@ Geocoder.prototype.exactAddress = function(gres,callback,index,result){
 
 Geocoder.prototype.nextLowerAddress = function(gres,callback,index,result){
   var self = this,
-  sql = "select ST_AsGeoJSON(ST_PointOnSurface(way)) as next_lower,tags->'addr:housenumber' as housenumber from planet_osm_polygon where tags->'addr:street' = '$street' and tags->'addr:housenumber' < '$housenumber' and ST_Intersects(way,ST_GeomFromText('$geom',900913)) order by housenumber desc";
+  sql = "select ST_AsGeoJSON(ST_PointOnSurface(way)) as next_lower,tags->'addr:housenumber' as housenumber from planet_osm_polygon where tags->'addr:street' = '$street' and cast( tags->'addr:housenumber' as int8) < $housenumber and ST_Intersects(way,ST_GeomFromText('$geom',900913)) order by housenumber desc";
 
   if (typeof index ==='undefined'){
     index = 0;
     result = [];
   }
   if (index < gres.streets.length){
-    sql = sql.replace(/\$geom/g,gres.streets[index].citybound).replace(/\$housenumber/g,gres.housenumber).replace(/\$street/g, gres.streets[index].name);
+    sql = sql.replace(/\$geom/g,gres.streets[index].citybound).replace(/\$housenumber/g,parseInt(gres.housenumber)).replace(/\$street/g, gres.streets[index].name);
     self.system.client.query(
       sql,
       function(err, pointResult){
         if (err){
+          console.log(err);
           callback(err);
         }else{
           if (pointResult.rows.length>0){
@@ -342,18 +343,21 @@ Geocoder.prototype.nextLowerAddress = function(gres,callback,index,result){
 
 Geocoder.prototype.nextUpperAddress = function(gres,callback,index,result){
   var self = this,
-  sql = "select ST_AsGeoJSON(ST_PointOnSurface(way)) as next_upper,tags->'addr:housenumber' as housenumber from planet_osm_polygon where tags->'addr:street' = '$street' and tags->'addr:housenumber' > '$housenumber' and ST_Intersects(way,ST_GeomFromText('$geom',900913)) order by housenumber asc";
+
+  sql = "select ST_AsGeoJSON(ST_PointOnSurface(way)) as next_upper,tags->'addr:housenumber' as housenumber from planet_osm_polygon where tags->'addr:street' = '$street' and cast ( tags->'addr:housenumber' as int8) > $housenumber and ST_Intersects(way,ST_GeomFromText('$geom',900913)) order by housenumber asc ";
 
   if (typeof index ==='undefined'){
     index = 0;
     result = [];
   }
   if (index < gres.streets.length){
-    sql = sql.replace(/\$geom/g,gres.streets[index].citybound).replace(/\$housenumber/g,gres.housenumber).replace(/\$street/g, gres.streets[index].name);
+    sql = sql.replace(/\$geom/g,gres.streets[index].citybound).replace(/\$housenumber/g,parseInt(gres.housenumber)).replace(/\$street/g, gres.streets[index].name);
+    //console.log(sql);
     self.system.client.query(
       sql,
       function(err, pointResult){
         if (err){
+          console.log(err);
           callback(err);
         }else{
           if (pointResult.rows.length>0){
