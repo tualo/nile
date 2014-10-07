@@ -38,7 +38,7 @@ if (program.geocode){
       }else{
         var geocoder = new Geocoder(system,program.debug);
         geocoder.geoCode(program.geocode,function(err,res){
-          console.log(res);
+          console.log(JSON.stringify(res,null,4));
           system.disconnect();
         });
       }
