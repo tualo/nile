@@ -2,7 +2,8 @@ var EventEmitter = require('events').EventEmitter,
 utilities = require('./Utilities'),
 pg = require('pg'),
 path = require('path'),
-fs = require('fs');
+fs = require('fs'),
+exec = require('child_process').exec;
 
 // CREATE EXTENSION fuzzystrmatch; is needed!
 
@@ -374,6 +375,17 @@ Geocoder.prototype.nextUpperAddress = function(gres,callback,index,result){
 }
 
 Geocoder.prototype.geoCode = function(address,callback){
+
+var child;
+child = exec('php /root/Nominatim-2.3.0/utils/query.php "'+address+'"', function (error, stdout, stderr) {
+  console.log('exec: ',error,stdout,stderr);
+if (error !== null) {
+  callback(error,stdout);
+}
+});
+
+
+  if (false){
   var i,
   self = this,
   a,
@@ -531,7 +543,7 @@ Geocoder.prototype.geoCode = function(address,callback){
       }
     }
   });
-
+}
 }
 
 
