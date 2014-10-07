@@ -312,7 +312,7 @@ Geocoder.prototype.exactAddress = function(gres,callback,index,result){
 
 Geocoder.prototype.nextLowerAddress = function(gres,callback,index,result){
   var self = this,
-  sql = "select ST_AsGeoJSON(ST_PointOnSurface(way)) as next_lower,tags->'addr:housenumber' as housenumber from planet_osm_polygon where tags->'addr:street' = '$street' and cast( tags->'addr:housenumber' as int8) < $housenumber and ST_Intersects(way,ST_GeomFromText('$geom',900913)) order by housenumber desc";
+  sql = "select ST_AsGeoJSON(ST_PointOnSurface(way)) as next_lower,tags->'addr:housenumber' as housenumber from planet_osm_polygon where tags->'addr:street' = '$street' and cast( coalesce(SUBSTRING(tags->'addr:housenumber', '.*?(\d\d\d)'),coalesce(SUBSTRING(tags->'addr:housenumber', '.*?(\d\d)'),SUBSTRING(tags->'addr:housenumber', '.*?(\d)'))) as int8) < $housenumber and ST_Intersects(way,ST_GeomFromText('$geom',900913)) order by housenumber desc";
 
   if (typeof index ==='undefined'){
     index = 0;
@@ -344,7 +344,7 @@ Geocoder.prototype.nextLowerAddress = function(gres,callback,index,result){
 Geocoder.prototype.nextUpperAddress = function(gres,callback,index,result){
   var self = this,
 
-  sql = "select ST_AsGeoJSON(ST_PointOnSurface(way)) as next_upper,tags->'addr:housenumber' as housenumber from planet_osm_polygon where tags->'addr:street' = '$street' and cast ( tags->'addr:housenumber' as int8) > $housenumber and ST_Intersects(way,ST_GeomFromText('$geom',900913)) order by housenumber asc ";
+  sql = "select ST_AsGeoJSON(ST_PointOnSurface(way)) as next_upper,tags->'addr:housenumber' as housenumber from planet_osm_polygon where tags->'addr:street' = '$street' and cast ( coalesce(SUBSTRING(tags->'addr:housenumber', '.*?(\d\d\d)'),coalesce(SUBSTRING(tags->'addr:housenumber', '.*?(\d\d)'),SUBSTRING(tags->'addr:housenumber', '.*?(\d)'))) as int8) > $housenumber and ST_Intersects(way,ST_GeomFromText('$geom',900913)) order by housenumber asc ";
 
   if (typeof index ==='undefined'){
     index = 0;
