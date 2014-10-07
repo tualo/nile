@@ -18,7 +18,8 @@ program
     .usage('[options]')
     .option('-s, --service', 'run the service')
     .option('-g, --geocode <address>', 'geocode a given adress')
-    .option('-c, --creategeocode', 'create or recreates the geocode index')
+    //.option('-c, --creategeocode', 'create or recreates the geocode index')
+    .option('-d, --debug', 'enable debug mode')
     .on('--help', help)
     .parse(process.argv);
 
@@ -35,7 +36,7 @@ if (program.geocode){
       if (err){
         system.logger.log('error',err);
       }else{
-        var geocoder = new Geocoder(system);
+        var geocoder = new Geocoder(system,program.debug);
         geocoder.geoCode(program.geocode,function(err,res){
           console.log(res);
           system.disconnect();
@@ -45,6 +46,7 @@ if (program.geocode){
   });
 }
 
+/*
 if (program.creategeocode){
   showhelp = false;
   main.init(function(system){
@@ -60,7 +62,7 @@ if (program.creategeocode){
     });
   });
 }
-
+*/
 
 if (showhelp){
   program.help();
