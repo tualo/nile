@@ -184,7 +184,7 @@ System.prototype.startHTTPService = function(){
   self.app.route('/geocode').post(function(req,res,next){
 
     var geocoder = new Geocoder(self);
-    geocoder.geoCode(req.body.city,req.body.address,function(err,result){
+    geocoder.geoCode(req.body.city,req.body.street,function(err,result){
       if (err){
         res.json(err);
       }else{
