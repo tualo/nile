@@ -4,6 +4,7 @@ pg = require('pg'),
 path = require('path'),
 fs = require('fs'),
 http = require('http'),
+request = require('request'),
 exec = require('child_process').exec;
 
 // CREATE EXTENSION fuzzystrmatch; is needed!
@@ -17,22 +18,19 @@ var Geocoder = function(system,debug){
   self.system = system;
 }
 
-Geocoder.prototype.geoCode = function(address,callback){
+Geocoder.prototype.geoCode = function(city,street,callback){
+
+city = encodeURIComponent(city);
+street = encodeURIComponent(street);
 
 var json,
     self = this,
     data = '',
-    req,
-    options = {
-      hostname: self.system.config.geocode.host,
-      port: self.system.config.geocode.port,
-      path:  self.system.config.geocode.path,
-      method: 'GET'
-    },
-    url = "http://"+self.system.config.geocode.host+':'+self.system.config.geocode.port+'/'+self.system.config.geocode.path;
+    url = "http://"+self.system.config.geocode.host+':'+self.system.config.geocode.port+'/'+ (self.system.config.geocode.path.replace('{city}', city).replace('{street}', street)),
+    req;
+  ///url = url.replace('{address}', address.replace(/\s/g,'%20'));
 
-  url = url.replace('{address}',encodeURI(address));
-  console.log(url);
+  console.log(url,http.headers);
   http.get(url,function(res){
     res.setEncoding('utf8');
     res.on('data', function (chunk) {
@@ -42,7 +40,7 @@ var json,
       if (typeof chunk === 'string'){
         data+=chunk;
       }
-      console.log(data);
+      //console.log(data);
       json = JSON.parse(data);
       callback(null,json);
     });

@@ -17,7 +17,7 @@ program
     .description('nile n(ode) tileserver')
     .usage('[options]')
     .option('-s, --service', 'run the service')
-    .option('-g, --geocode <address>', 'geocode a given adress')
+    .option('-g, --geocode <city,street>', 'geocode a given adress')
     //.option('-c, --creategeocode', 'create or recreates the geocode index')
     .option('-d, --debug', 'enable debug mode')
     .on('--help', help)
@@ -36,8 +36,10 @@ if (program.geocode){
       if (err){
         system.logger.log('error',err);
       }else{
+        var p = program.geocode.split(',');
+
         var geocoder = new Geocoder(system,program.debug);
-        geocoder.geoCode(program.geocode,function(err,res){
+        geocoder.geoCode(p[0],p[1],function(err,res){
           console.log(JSON.stringify(res,null,4));
           system.disconnect();
         });

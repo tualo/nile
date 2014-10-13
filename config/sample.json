@@ -4,7 +4,7 @@
   "geocode": {
     "host": "maps.tualo.de",
     "port": 8080,
-    "path": "nominatim/search.php?format=json&q={address}"
+    "path": "nominatim/search.php?addressdetails=0&format=json&city={city}&street={street}"
   },
   "http": {
     "port": 9000,
