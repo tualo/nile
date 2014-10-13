@@ -1,6 +1,11 @@
 {
   "database": "postgres://thomashoffmann@localhost/map",
   "nominatim": "/var/lib/postgresql/src/Nominatim/utils/query.php",
+  "geocode": {
+    "host": "maps.tualo.de",
+    "port": 8080,
+    "path": "nominatim/search.php?format=json&q={address}"
+  },
   "http": {
     "port": 9000,
     "active": true

@@ -18,6 +18,42 @@ var Geocoder = function(system,debug){
 
 Geocoder.prototype.geoCode = function(address,callback){
 
+  var options = {
+    hostname: self.system.config.geocode.host,
+    port: self.system.config.geocode.port,
+    path:  self.system.config.geocode.path,
+    method: 'GET'
+  };
+
+  options.path.replace('{address}',encodeURI(address))
+  var data = '';
+  var json;
+  var req = http.request(options, function(res) {
+    //console.log('STATUS: ' + res.statusCode);
+    //console.log('HEADERS: ' + JSON.stringify(res.headers));
+    res.setEncoding('utf8');
+    res.on('data', function (chunk) {
+      data+=chunk;
+    });
+    res.on('end', function (chunk) {
+      data+=chunk;
+      json = JSON.parse(data);
+      callback(null,json);
+      //console.log('BODY: ' + chunk);
+    });
+  });
+
+  req.on('error', function(e) {
+    console.log('problem with request: ' + e.message);
+    callback(e);
+  });
+
+  // write data to request body
+  //  req.write('data\n');
+  //  req.write('data\n');
+  req.end();
+
+/*
   var child,
   self = this,
   json;
@@ -37,6 +73,7 @@ Geocoder.prototype.geoCode = function(address,callback){
       }
     }
   });
+*/
 }
 
 
