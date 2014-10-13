@@ -28,22 +28,31 @@ var json,
       port: self.system.config.geocode.port,
       path:  self.system.config.geocode.path,
       method: 'GET'
-    };
+    },
+    url = "http://"+self.system.config.geocode.host+':'+self.system.config.geocode.port+'/'+self.system.config.geocode.path;
 
-  options.path.replace('{address}',encodeURI(address))
-  req = http.request(options, function(res) {
-    //console.log('STATUS: ' + res.statusCode);
-    //console.log('HEADERS: ' + JSON.stringify(res.headers));
+  url = url.replace('{address}',encodeURI(address));
+  console.log(url);
+  http.get(url,function(res){
     res.setEncoding('utf8');
     res.on('data', function (chunk) {
       data+=chunk;
     });
     res.on('end', function (chunk) {
-      data+=chunk;
+      if (typeof chunk === 'string'){
+        data+=chunk;
+      }
+      console.log(data);
       json = JSON.parse(data);
       callback(null,json);
-      console.log('BODY: ' + data);
     });
+  })
+
+/*
+  req = http.request(options, function(res) {
+    //console.log('STATUS: ' + res.statusCode);
+    //console.log('HEADERS: ' + JSON.stringify(res.headers));
+
   });
 
   req.on('error', function(e) {
@@ -55,7 +64,7 @@ var json,
   //  req.write('data\n');
   //  req.write('data\n');
   req.end();
-
+*/
 /*
   var child,
   self = this,
