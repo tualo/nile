@@ -222,6 +222,18 @@ System.prototype.startHTTPService = function(){
 
   });
 
+  if ( (typeof this.config.https!='undefined') && (this.config.https.active == true)){
+    var https = require('https');
+    var privateKey  = fs.readFileSync(this.config.https.key, 'utf8');
+    var certificate = fs.readFileSync(this.config.https.cert, 'utf8');
+    var credentials = {key: privateKey, cert: certificate};
+    if (typeof this.config.https.port == 'undefined'){
+      this.config.https.port = 80;
+    }
+    https.createServer(credentials, app).listen(this.config.https.port);
+  }
+
+
   if ( (typeof this.config.http!='undefined') && (this.config.http.active == true)){
     if (typeof this.config.http.port == 'undefined'){
       this.config.http.port = 80;
