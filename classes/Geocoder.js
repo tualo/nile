@@ -3,6 +3,7 @@ utilities = require('./Utilities'),
 pg = require('pg'),
 path = require('path'),
 fs = require('fs'),
+http = require('http'),
 exec = require('child_process').exec;
 
 // CREATE EXTENSION fuzzystrmatch; is needed!
