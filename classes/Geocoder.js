@@ -42,7 +42,7 @@ var json,
       data+=chunk;
       json = JSON.parse(data);
       callback(null,json);
-      //console.log('BODY: ' + chunk);
+      console.log('BODY: ' + data);
     });
   });
 
