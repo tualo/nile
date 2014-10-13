@@ -230,7 +230,7 @@ System.prototype.startHTTPService = function(){
     if (typeof this.config.https.port == 'undefined'){
       this.config.https.port = 80;
     }
-    https.createServer(credentials, app).listen(this.config.https.port);
+    https.createServer(credentials, this.app).listen(this.config.https.port);
   }
 
 
