@@ -119,6 +119,7 @@ function fillLayerList (layers){
 
   }
 
+  /*
   res.push(
     new ol.layer.Vector({
       source: new ol.source.GeoJSON({
@@ -127,7 +128,8 @@ function fillLayerList (layers){
       style: createPolygonStyleFunction()
     })
   );
-
+  */
+  
   //res.push(vector);
   return res;
 }
