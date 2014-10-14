@@ -67,6 +67,6 @@ Router.prototype.route = function(lng_from,lat_from,lng_to,lat_to,callback){
       }
   })
 
-});
+}
 
 exports.Router = Router;
