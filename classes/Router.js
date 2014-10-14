@@ -51,7 +51,7 @@ Router.prototype.routeAddress = function(city_from,street_from,city_to,street_to
 Router.prototype.route = function(lng_from,lat_from,lng_to,lat_to,callback){
   var self = this,
       client = self.system.client,
-      sql = 'select ST_AsText(ST_UNION(geom)) way, sum(cost) len from pgr_fromAtoB(\'ways\',{lng_from}, {lat_from},{lng_to}, {lat_to})';
+      sql = 'select ST_AsGEOJSON(ST_UNION(geom)) way, sum(cost) len from pgr_fromAtoB(\'ways\',{lng_from}, {lat_from},{lng_to}, {lat_to})';
       sql = sql.replace('{lng_from}',lng_from)
                .replace('{lat_from}',lat_from)
                .replace('{lng_to}',lng_to)
