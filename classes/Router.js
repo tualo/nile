@@ -23,14 +23,14 @@ Router.prototype.routeAddress = function(city_from,street_from,city_to,street_to
       callback(err);
     }else{
       if (res.length>0){
-        start_lon = res[0].lng;
+        start_lon = res[0].lon;
         start_lat = res[0].lat;
         geocoder.geoCode(city_to,street_to,function(err,res){
           if(err){
             callback(err);
           }else{
             if (res.length>0){
-              stop_lon = res[0].lng;
+              stop_lon = res[0].lon;
               stop_lat = res[0].lat;
 
               self.route(start_lon,start_lat,stop_lon,stop_lat,callback);
@@ -54,7 +54,7 @@ Router.prototype.route = function(lng_from,lat_from,lng_to,lat_to,callback){
       sql = 'select ST_AsText(ST_UNION(geom)) way, sum(cost) len from pgr_fromAtoB(\'ways\',{lng_from}, {lat_from},{lng_to}, {lat_to})';
       sql = sql.replace('{lng_from}',lng_from)
                .replace('{lat_from}',lat_from)
-               .replace('{lng_to}',lng_from)
+               .replace('{lng_to}',lng_to)
                .replace('{lat_to}',lat_to);
 
   client.query( sql , function(err, results){
