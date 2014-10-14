@@ -2,6 +2,7 @@
 var pjson = require('../package.json'),
   main = require('../lib/main'),
   Geocoder = require('../classes/Geocoder').Geocoder,
+  Router = require('../classes/Router').Router,
   program = require('commander'),
   showhelp = true;
 
@@ -18,6 +19,7 @@ program
     .usage('[options]')
     .option('-s, --service', 'run the service')
     .option('-g, --geocode <city,street>', 'geocode a given adress')
+    .option('-r, --route <city_from,street_from,city_to,street_to>', 'route from to')
     //.option('-c, --creategeocode', 'create or recreates the geocode index')
     .option('-d, --debug', 'enable debug mode')
     .on('--help', help)
@@ -48,6 +50,24 @@ if (program.geocode){
   });
 }
 
+if (program.route){
+  showhelp = false;
+  main.init(function(system){
+    system.connect(function(err){
+      if (err){
+        system.logger.log('error',err);
+      }else{
+        var p = program.route.split(',');
+
+        var router = new Router(system,program.debug);
+        router.routeAddress(p[0],p[1],p[2],p[3],function(err,res){
+          console.log(JSON.stringify(res,null,4));
+          system.disconnect();
+        });
+      }
+    });
+  });
+}
 /*
 if (program.creategeocode){
   showhelp = false;
