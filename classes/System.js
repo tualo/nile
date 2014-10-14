@@ -148,8 +148,6 @@ System.prototype.startHTTPService = function(){
   });
 
 
-
-});
   self.app.route('/geocode').post(function(req,res,next){
 
     var geocoder = new Geocoder(self);
