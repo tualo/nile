@@ -210,9 +210,14 @@ System.prototype.startHTTPService = function(){
     var https = require('https');
     var privateKey  = fs.readFileSync(this.config.https.key, 'utf8');
     var certificate = fs.readFileSync(this.config.https.cert, 'utf8');
-    var credentials = {key: privateKey, cert: certificate};
+    var credentials = {
+        key: privateKey,
+        cert: certificate,
+        ciphers: 'ECDHE-RSA-AES256-CBC-SHA:ECDHE-RSA-AES128-CBC-SHA:AES128-GCM-SHA256:!RC4:!HIGH:!MD5:!aNULL:!EDH',
+        honorCipherOrder: true
+    };
     if (typeof this.config.https.port == 'undefined'){
-      this.config.https.port = 80;
+      this.config.https.port = 443;
     }
     https.createServer(credentials, this.app).listen(this.config.https.port);
   }
