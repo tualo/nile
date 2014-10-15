@@ -213,7 +213,7 @@ System.prototype.startHTTPService = function(){
     var credentials = {
         key: privateKey,
         cert: certificate,
-        ciphers: 'ECDHE-RSA-AES256-CBC-SHA:ECDHE-RSA-AES128-CBC-SHA:AES128-GCM-SHA256:!RC4:!HIGH:!MD5:!aNULL:!EDH',
+        ciphers: 'AES128-GCM-SHA256:RC4:HIGH:!MD5:!aNULL:!EDH',
         honorCipherOrder: true
     };
     if (typeof this.config.https.port == 'undefined'){
