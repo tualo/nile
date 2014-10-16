@@ -14,6 +14,7 @@ express = require('express'),
 glob = require("glob"),
 bodyparser = require('body-parser'),
 mkdirp = require("mkdirp"),
+constants = require('constants');
 Renderer =  require('nile-style').Renderer,
 StyleInstructions =  require('nile-style').StyleInstructions;
 
@@ -214,10 +215,12 @@ System.prototype.startHTTPService = function(){
     var credentials = {
         key: privateKey,
         cert: certificate,
+        secureOptions: constants.SSL_OP_NO_SSLv3 | constants.SSL_OP_NO_SSLv2,
         ciphers: 'AES128-GCM-SHA256:!RC4:!HIGH:!MD5:!aNULL:!EDH',
         honorCipherOrder: true
     };
-    if (typeof this.config.https.ciphers == 'string'){
+
+    if (typeof this.config.https.ciphers === 'string'){
       credentials.ciphers = this.config.https.ciphers;
     }
 
