@@ -13,8 +13,10 @@ or
 
 CREATE EXTENSION postgis;
 CREATE EXTENSION pgrouting;
+CREATE EXTENSION hstore;
 
-osm2pgrouting -file thueringen-latest.osm  -dbname routing -conf mapconfig.xml -user postgres -passwd pw001-1
+
+osm2pgrouting -file thueringen-latest.osm  -dbname routing -conf mapconfig.xml -user postgres -passwd ****
 
 From Sources
 
@@ -23,6 +25,7 @@ From Sources
 Install postgres
 
   brew install postgres
+  brew install postgis
 
 ## pgrouting
 Download pgrouting, remove the -fno-delete-null-pointer-checks flag, this
@@ -53,9 +56,27 @@ Note: on "declaration of 'mkdtemp' has a different language linkage" errors add 
 
 ## Nominatim
 
+
+
+  cat > /usr/local/Cellar/postgresql/9.3.5_1/include/byteswap.h <<EOF
+  /*
+  This is a simple compatibility shim to convert
+  Linux byte swap macros to the Mac OS X equivalents.
+  It is public domain.
+  */
+
+  #include <libkern/OSByteOrder.h>
+
+  #define bswap_16(x) OSSwapInt16(x)
+  #define bswap_32(x) OSSwapInt32(x)
+  #define bswap_64(x) OSSwapInt64(x)
+  EOF
+
   git clone --recursive https://github.com/twain47/Nominatim.git
   brew install lua protobuf
+  brew install protobuf-c
   brew install automake autoconf libtool libxml2
   brew link libxml2 --force
   ./autogen.sh
   ./configure
+  php 
