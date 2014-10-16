@@ -14,7 +14,7 @@ express = require('express'),
 glob = require("glob"),
 bodyparser = require('body-parser'),
 mkdirp = require("mkdirp"),
-constants = require('constants');
+constants = require('constants'),
 Renderer =  require('nile-style').Renderer,
 StyleInstructions =  require('nile-style').StyleInstructions;
 
