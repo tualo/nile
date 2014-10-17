@@ -1,0 +1,63 @@
+#!/usr/bin/env node
+var pjson = require('../package.json'),
+  main = require('../lib/main'),
+  Geocoder = require('../classes/Geocoder').Geocoder,
+  Router = require('../classes/Router').Router,
+  InitialChecks = require('../classes/InitialChecks').InitialChecks,
+  Chained = require('../classes/Chained').Chained,
+  program = require('commander'),
+  showhelp = true;
+
+var help = function(){
+    var examples = [];
+    console.log(examples.join("\n"));
+}
+
+program
+    .version(pjson.version)
+    .description('nile-setup')
+    .usage('[options]')
+    .option('-c, --create', 'create the missing functions/ extensions if needed')
+    .on('--help', help)
+    .parse(process.argv);
+
+main.init(function(system){
+  system.connect(function(err){
+    if (err){
+      system.logger.log('error',err);
+    }else{
+
+      var initalChecks = new InitialChecks(system,false);
+      var chain = new Chained();
+
+
+      chain.add('version',initalChecks.checkFunction,['version'],initalChecks);
+      chain.add('postgis',initalChecks.checkExtensions,['postgis'],initalChecks);
+      chain.add('plpgsql',initalChecks.checkExtensions,['plpgsql'],initalChecks);
+      chain.add('pgrouting',initalChecks.checkExtensions,['pgrouting'],initalChecks);
+      chain.add('pgr_fromatob',initalChecks.checkFunction,['pgr_fromatob'],initalChecks);
+
+      chain.run(function(err,res){
+        //console.log(err,res);
+        if (err){
+          console.log(err);
+        }else{
+          for(var i in res){
+            if (res[i]){
+              console.log(i,'OK');
+            }else{
+              if (program.create){
+
+              }else{
+                console.log(i,'FAILED');
+              }
+
+            }
+          }
+        }
+        system.disconnect();
+      });
+
+    }
+  })
+})
