@@ -45,6 +45,16 @@ Note: on "declaration of 'mkdtemp' has a different language linkage" errors add 
   nano ../src/dijkstra/src/dijkstra.h
   nano ../src/driving_distance/src/drivedist.h
 
+## osm2pgrouting
+
+  git clone https://github.com/pgRouting/osm2pgrouting.git
+  cd osm2pgrouting
+  cmake
+  make
+  make install
+  osm2pgrouting -file thueringen-latest.osm  -dbname routing -conf mapconfig.xml -user postgres -passwd ****
+
+
 ## protobuf
 
   wget https://protobuf.googlecode.com/files/protobuf-2.5.0.tar.bz2
@@ -79,4 +89,4 @@ Note: on "declaration of 'mkdtemp' has a different language linkage" errors add 
   brew link libxml2 --force
   ./autogen.sh
   ./configure
-  php 
+  php
