@@ -7,7 +7,6 @@ var pjson = require('../package.json'),
   showhelp = true;
 
 
-
 var help = function(){
     var examples = [];
     console.log(examples.join("\n"));
@@ -20,6 +19,7 @@ program
     .option('-s, --service', 'run the service')
     .option('-g, --geocode <city,street>', 'geocode a given adress')
     .option('-r, --route <city_from,street_from,city_to,street_to>', 'route from to')
+    .option('-c, --routeclasses', 'get all available classes for routing')
     //.option('-c, --creategeocode', 'create or recreates the geocode index')
     .option('-d, --debug', 'enable debug mode')
     .on('--help', help)
@@ -27,7 +27,6 @@ program
 
 if (program.service){
   showhelp = false;
-
   main.startup();
 }
 
@@ -42,6 +41,23 @@ if (program.geocode){
 
         var geocoder = new Geocoder(system,program.debug);
         geocoder.geoCode(p[0],p[1],function(err,res){
+          console.log(JSON.stringify(res,null,4));
+          system.disconnect();
+        });
+      }
+    });
+  });
+}
+
+if (program.routeclasses){
+  showhelp = false;
+  main.init(function(system){
+    system.connect(function(err){
+      if (err){
+        system.logger.log('error',err);
+      }else{
+        var router = new Router(system,program.debug);
+        router.getClasses(function(err,res){
           console.log(JSON.stringify(res,null,4));
           system.disconnect();
         });
@@ -68,23 +84,6 @@ if (program.route){
     });
   });
 }
-/*
-if (program.creategeocode){
-  showhelp = false;
-  main.init(function(system){
-    system.connect(function(err){
-      if (err){
-        system.logger.log('error',err);
-      }else{
-        var geocoder = new Geocoder(system);
-        geocoder.createOrUpdate(function(){
-          system.disconnect();
-        });
-      }
-    });
-  });
-}
-*/
 
 if (showhelp){
   program.help();
