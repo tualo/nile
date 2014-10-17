@@ -179,6 +179,17 @@ System.prototype.startHTTPService = function(){
   self.app.route('/route').post(function(req,res,next){
 
     var router = new Router(self);
+    if (typeof req.body.type==='string'){
+      if (req.body.type==='feet'){
+        router.tbl = 'feet_ways';
+      }
+      if (req.body.type==='car'){
+        router.tbl = 'car_ways';
+      }
+      if (req.body.type==='cycle'){
+        router.tbl = 'cycle_ways';
+      }
+    }
     router.routeAddress(
       req.body.from_city,req.body.from_street,
       req.body.to_city,req.body.to_street
