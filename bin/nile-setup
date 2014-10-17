@@ -6,18 +6,30 @@ var pjson = require('../package.json'),
   InitialChecks = require('../classes/InitialChecks').InitialChecks,
   Chained = require('../classes/Chained').Chained,
   program = require('commander'),
+  fs = require('fs'),
+  path = require('path'),
   showhelp = true;
 
 var help = function(){
     var examples = [];
     console.log(examples.join("\n"));
 }
-
+var installTable = function(client,key,callback){
+  client.query( fs.readFileSync(path.join(__dirname,'..','setup',key+'.sql')).toString() , function(err, results){
+      if (err){
+        //this.logger.log('error',err);
+        callback(err);
+      }else{
+        //this.logger.log('info',key+' installed');
+        callback(null,'installed');
+      }
+  });
+}
 program
     .version(pjson.version)
     .description('nile-setup')
     .usage('[options]')
-    .option('-c, --create', 'create the missing functions/ extensions if needed')
+    .option('-c, --create', 'create the missing functions, extensions or tables if needed')
     .on('--help', help)
     .parse(process.argv);
 
@@ -29,33 +41,56 @@ main.init(function(system){
 
       var initalChecks = new InitialChecks(system,false);
       var chain = new Chained();
+      var installChain = new Chained();
 
 
       chain.add('version',initalChecks.checkFunction,['version'],initalChecks);
-      chain.add('postgis',initalChecks.checkExtensions,['postgis'],initalChecks);
-      chain.add('plpgsql',initalChecks.checkExtensions,['plpgsql'],initalChecks);
-      chain.add('pgrouting',initalChecks.checkExtensions,['pgrouting'],initalChecks);
+      chain.add('postgis',initalChecks.checkExtension,['postgis'],initalChecks);
+      chain.add('plpgsql',initalChecks.checkExtension,['plpgsql'],initalChecks);
+      chain.add('pgrouting',initalChecks.checkExtension,['pgrouting'],initalChecks);
       chain.add('pgr_fromatob',initalChecks.checkFunction,['pgr_fromatob'],initalChecks);
+      chain.add('hstore2json',initalChecks.checkFunction,['hstore2json'],initalChecks);
+
+      chain.add('car_ways',initalChecks.checkTable,['car_ways'],initalChecks);
+      chain.add('cycle_ways',initalChecks.checkTable,['cycle_ways'],initalChecks);
+      chain.add('feet_ways',initalChecks.checkTable,['feet_ways'],initalChecks);
 
       chain.run(function(err,res){
         //console.log(err,res);
         if (err){
-          console.log(err);
+          system.logger.log('error',err);
         }else{
           for(var i in res){
             if (res[i]){
-              console.log(i,'OK');
+              system.logger.log('info',i+' OK');
             }else{
               if (program.create){
-
+                if (i==='car_ways'){
+                  installChain.add(i,installTable,[system.client,i],system);
+                }
+                if (i==='cycle_ways'){
+                  installChain.add(i,installTable,[system.client,i],system);
+                }
+                if (i==='feet_ways'){
+                  installChain.add(i,installTable,[system.client,i],system);
+                }
               }else{
-                console.log(i,'FAILED');
+                system.logger.log('error',i+' FAILED');
               }
 
             }
           }
         }
-        system.disconnect();
+
+        installChain.run(function(err,res){
+          for(var i in res){
+            if (res[i]){
+              system.logger.log('info',i+' '+res[i]);
+            }
+          }
+          system.disconnect();
+        })
+
       });
 
     }
