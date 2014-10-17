@@ -163,6 +163,19 @@ System.prototype.startHTTPService = function(){
   });
 
 
+  self.app.route('/route/classes').post(function(req,res,next){
+
+    var router = new Router(self);
+    router.getClasses(function(err,result){
+      if (err){
+        res.json(err);
+      }else{
+        res.json(result);
+      }
+    });
+
+  });
+
   self.app.route('/route').post(function(req,res,next){
 
     var router = new Router(self);
