@@ -1,5 +1,5 @@
 {
-  "database": "postgres://thomashoffmann@localhost/map",
+  "database": "postgres://postgres@localhost/map",
   "nominatim": "/var/lib/postgresql/src/Nominatim/utils/query.php",
   "geocode": {
     "host": "maps.tualo.de",

@@ -8,6 +8,7 @@ var Router = function(system,debug){
     self.debug = debug;
   }
   self.system = system;
+  self.tbl = 'car_ways';
 }
 
 Router.prototype.routeAddress = function(city_from,street_from,city_to,street_to,callback){
@@ -69,36 +70,38 @@ Router.prototype.getClasses = function(callback){
   });
 }
 
+
+Router.prototype.tsp = function(list,callback){
+
+}
+
+
+
 Router.prototype.route = function(lng_from,lat_from,lng_to,lat_to,callback){
   var self = this,
       client = self.system.client,
-      sub_sql = [
-      'SELECT gid AS id,',
-      ' source::integer,',
-      ' target::integer,',
-      ' length As cost',
-      'FROM ways, classes c',
-      'WHERE class_id = c.id',
-      '  AND class_id != 111'].join(' '),
+
       sql = ['select',
       '  ST_AsGEOJSON(ST_UNION(geom)) way,',
       '  sum(cost) len',
       'from',
-      '  pgr_fromAtoB(\'ways\',{lng_from}, {lat_from},{lng_to}, {lat_to})'].join(' ');
+      '  pgr_fromAtoB(\''+self.tbl+'\',{lng_from}, {lat_from},{lng_to}, {lat_to})'].join(' ');
       sql = sql.replace('{lng_from}',lng_from)
                .replace('{lat_from}',lat_from)
                .replace('{lng_to}',lng_to)
                .replace('{lat_to}',lat_to);
 
-  client.query( sql , function(err, results){
 
-      if (err){
-        self.system.logger.log('error',err);
-        callback(err, null);
-      }else{
-        callback(false, results.rows);
-      }
-  })
+    client.query( sql , function(err, results){
+
+        if (err){
+          self.system.logger.log('error',err);
+          callback(err, null);
+        }else{
+          callback(false, results.rows);
+        }
+    })
+
 
 }
 

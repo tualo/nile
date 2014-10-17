@@ -18,6 +18,9 @@ program
     .usage('[options]')
     .option('-s, --service', 'run the service')
     .option('-g, --geocode <city,street>', 'geocode a given adress')
+    .option('--feet', 'route by feet')
+    .option('--cycle', 'route by cycle')
+    .option('--car', 'route by car, default')
     .option('-r, --route <city_from,street_from,city_to,street_to>', 'route from to')
     .option('-c, --routeclasses', 'get all available classes for routing')
     //.option('-c, --creategeocode', 'create or recreates the geocode index')
@@ -76,6 +79,9 @@ if (program.route){
         var p = program.route.split(',');
 
         var router = new Router(system,program.debug);
+        if (program.cycle) router.tbl = 'cycle_ways';
+        if (program.car) router.tbl = 'car_ways';
+        if (program.feet) router.tbl = 'feet_ways';
         router.routeAddress(p[0],p[1],p[2],p[3],function(err,res){
           console.log(JSON.stringify(res,null,4));
           system.disconnect();
