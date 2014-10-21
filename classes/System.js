@@ -176,8 +176,27 @@ System.prototype.startHTTPService = function(){
 
   });
 
-  self.app.route('/route/tsp').post(function(req,res,next){
+  self.app.route('/get').post(function(req,res,next){
+    var sql = [
+          'select ST_ASGeoJSON(way) geojson, hstore2json(tags) info from planet_osm_polygon where osm_id = {osm_id} ',
+          'select ST_ASGeoJSON(way) geojson, hstore2json(tags) info from planet_osm_line where osm_id = {osm_id} ',
+          'select ST_ASGeoJSON(way) geojson, hstore2json(tags) info from planet_osm_point where osm_id = {osm_id} '
+        ].join(' union ')
+    if (typeof req.body.osm_id!=='undefined'){
+      sql = sql.replace(/\{osm_id\}/g,req.body.osm_id);
+      self.client.query( sql , function(err, results){
+        if (err){
+          res.json(err);
+        }else{
+          res.json(results.rows);
+        }
+      })
+    }else{
+      res.json("osm_id is missing");
+    }
+  });
 
+  self.app.route('/route/tsp').post(function(req,res,next){
     var router = new Router(self);
     if (typeof req.body.type==='string'){
       if (req.body.type==='feet'){

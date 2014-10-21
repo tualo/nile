@@ -155,7 +155,7 @@ create table tsp_vertex_table (
 id int4,
 x double precision,
 y double precision,
-session int32
+session int8
 );
 */
 
