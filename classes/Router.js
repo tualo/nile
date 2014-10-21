@@ -8,7 +8,7 @@ var Router = function(system,debug){
     self.debug = debug;
   }
   self.system = system;
-  self.tbl = 'car_ways';
+  self.tbl = 'carways';
 }
 
 Router.prototype.routeAddress = function(city_from,street_from,city_to,street_to,callback){
@@ -34,6 +34,7 @@ Router.prototype.routeAddress = function(city_from,street_from,city_to,street_to
               stop_lon = res[0].lon;
               stop_lat = res[0].lat;
 
+              console.log(start_lon,start_lat,stop_lon,stop_lat);
               self.route(start_lon,start_lat,stop_lon,stop_lat,callback);
 
 
@@ -70,12 +71,180 @@ Router.prototype.getClasses = function(callback){
   });
 }
 
-
-Router.prototype.tsp = function(list,callback){
-
+Router.prototype.sortListBy = function(list,key){
+  var l = [],
+      res = [],
+      h = {},
+      i = 0,
+      s,
+      j,
+      n,
+      m = list.length;
+  for(i=0;i<m;i++){
+    l.push(list[i][key] + 100000);
+    if (typeof h[ list[i][key] ] === 'undefined'){
+      h[ list[i][key] ] = [];
+    }
+    h[ list[i][key] ].push(list[i]);
+  }
+  l.sort();
+  for(i in l){
+    if (h.hasOwnProperty(i)){
+      s = h[i];
+      n= s.length;
+      for(j=0;j<n;j++){
+        res.push(s[j]);
+      }
+    }
+  }
+  return res;
 }
 
+Router.prototype.tsp = function(list,callback){
+  var self=this,
+      sessionkey = (new Date().getTime()),
+      client = self.system.client,
+      sql = '',
+      i=0,
+      m=0,
+      l,
+      j=0,
+      n=0;
 
+  self._tsp_fill_ids(sessionkey,list,0,function(err,new_list){
+
+    if (err){
+      callback(err);
+    }else{
+    sql = 'SELECT * from pgr_tsp(\'SELECT distinct id, x, y  FROM tsp_vertex_table where session = '+sessionkey+' \','+new_list[0].id+')';
+    client.query( sql , function(err, results){
+      if (results.rows.length>0){
+        m = results.rows.length;
+        for(i=0;i<m;i++){
+          l = self.indexMap[results.rows[i].id2];
+          n = l.length;
+          for (j=0;j<n;j++){
+            new_list[l[j]].seq = results.rows[i].seq;
+          }
+        }
+
+        //keysSorted = Object.keys(new_list).sort(function(a,b){return new_list[a]-new_list[b]})
+
+        //new_list.sort(function(a, b) {return a[1] - b[1]})
+
+        callback(err, self.sortListBy(new_list,'seq') );
+
+        //SELECT dmatrix, ids from pgr_makeDistanceMatrix('SELECT id, x, y FROM tsp_vertex_table');
+        client.query( 'delete from tsp_vertex_table where session =  '+sessionkey+'  ' , function(err, results){
+        });
+
+      }else{
+        callback("no result");
+        //SELECT dmatrix, ids from pgr_makeDistanceMatrix('SELECT id, x, y FROM tsp_vertex_table');
+        //client.query( 'delete from tsp_vertex_table where session =  '+sessionkey+'  ' , function(err, results){
+        //});
+      }
+
+    })
+  }
+    // 'SELECT seq, id1, id2, round(cost::numeric, 2) AS cost FROM pgr_tsp('SELECT id, x, y FROM tsp_vertex_tabl',42673) '
+  })
+}
+/*
+drop table tsp_vertex_table;
+create table tsp_vertex_table (
+id int4,
+x double precision,
+y double precision,
+session int32
+);
+*/
+
+Router.prototype._tsp_fill_ids = function(sessionkey,list,index,callback){
+var self=this,
+    client = self.system.client,
+    sql = [
+    'SELECT carways_vertices_pgr.id::integer as id,st_x(carways_vertices_pgr.the_geom) as lng,st_y(carways_vertices_pgr.the_geom) as lat FROM carways_vertices_pgr join ',
+    ' carways on carways_vertices_pgr.id=carways.gid ',
+    ' ORDER BY carways_vertices_pgr.the_geom <-> ST_GeometryFromText(\'POINT({lng} {lat})\',4326) LIMIT 1'
+    ].join(' '),
+    insertTPL= [
+    'insert into tsp_vertex_table ',
+    '(id,x,y,session) values ',
+    '({id},{x},{y}, {session} )'
+    ].join(' '),
+    insert='';
+
+/*
+select i, array_agg(dist) as arow from (
+            select a.id as i, b.id as j, st_distance(st_makepoint(a.x, a.y), st_makepoint(b.x, b.y)) as dist
+              from tsp_vertex_table a, tsp_vertex_table b
+             order by a.id, b.id
+           ) as foo group by i order by i
+  */
+  if (typeof self.indexMap === 'undefined'){
+    self.indexMap = {};
+  }
+  if (index < list.length){
+    sql = sql.replace('{lng}',list[index].lng).replace('{lat}',list[index].lat);
+    //console.log(list[index],sql);
+    client.query( sql , function(err, results){
+        if (err){
+          callback(err, null);
+        }else{
+          if (results.rows.length===1){
+            if (typeof self.indexMap[results.rows[0].id]==='undefined'){
+              self.indexMap[results.rows[0].id]=[];
+            }
+            self.indexMap[results.rows[0].id].push(index);
+
+            list[index].id = results.rows[0].id;
+            insert = insertTPL;
+            insert = insert.replace('{id}',results.rows[0].id);
+            insert = insert.replace('{y}',results.rows[0].lng);
+            insert = insert.replace('{x}',results.rows[0].lat);
+            insert = insert.replace('{session}',sessionkey);
+            client.query( insert , function(err, results){
+              //console.log(err, results);
+              self._tsp_fill_ids(sessionkey,list,index+1,callback);
+            })
+          }else{
+            callback("node not found");
+          }
+        }
+    })
+  }else{
+    callback(null,list);
+  }
+}
+
+Router.prototype.routeList = function(list,callback,index){
+  var self = this;
+
+  if (typeof index === 'undefined'){
+    console.log(list);
+    list[0].len=0;
+    index = 1;
+  }
+  console.log(index);
+  if (index < list.length){
+    self.route(list[index-1].lng,list[index-1].lat,list[index].lng,list[index].lat,function(err,results){
+      if (err){
+        callback(err);
+      }else{
+        if (results.length>0){
+          list[index].len = results[0].len;
+          list[index].way = results[0].way;
+        }else{
+          list[index].len = 0;
+        }
+        self.routeList(list,callback,index + 1);
+      }
+    })
+  }else{
+    callback(null,list);
+  }
+}
 
 Router.prototype.route = function(lng_from,lat_from,lng_to,lat_to,callback){
   var self = this,
@@ -90,8 +259,7 @@ Router.prototype.route = function(lng_from,lat_from,lng_to,lat_to,callback){
                .replace('{lat_from}',lat_from)
                .replace('{lng_to}',lng_to)
                .replace('{lat_to}',lat_to);
-
-
+    console.log(sql);
     client.query( sql , function(err, results){
 
         if (err){
