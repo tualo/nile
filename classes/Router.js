@@ -34,7 +34,6 @@ Router.prototype.routeAddress = function(city_from,street_from,city_to,street_to
               stop_lon = res[0].lon;
               stop_lat = res[0].lat;
 
-              console.log(start_lon,start_lat,stop_lon,stop_lat);
               self.route(start_lon,start_lat,stop_lon,stop_lat,callback);
 
 
@@ -164,9 +163,9 @@ Router.prototype._tsp_fill_ids = function(sessionkey,list,index,callback){
 var self=this,
     client = self.system.client,
     sql = [
-    'SELECT carways_vertices_pgr.id::integer as id,st_x(carways_vertices_pgr.the_geom) as lng,st_y(carways_vertices_pgr.the_geom) as lat FROM carways_vertices_pgr join ',
-    ' carways on carways_vertices_pgr.id=carways.gid ',
-    ' ORDER BY carways_vertices_pgr.the_geom <-> ST_GeometryFromText(\'POINT({lng} {lat})\',4326) LIMIT 1'
+    'SELECT '+self.tbl+'_vertices_pgr.id::integer as id,st_x('+self.tbl+'_vertices_pgr.the_geom) as lng,st_y('+self.tbl+'_vertices_pgr.the_geom) as lat FROM '+self.tbl+'_vertices_pgr join ',
+    ' '+self.tbl+' on '+self.tbl+'_vertices_pgr.id='+self.tbl+'.gid ',
+    ' ORDER BY '+self.tbl+'_vertices_pgr.the_geom <-> ST_GeometryFromText(\'POINT({lng} {lat})\',4326) LIMIT 1'
     ].join(' '),
     insertTPL= [
     'insert into tsp_vertex_table ',
@@ -187,7 +186,6 @@ select i, array_agg(dist) as arow from (
   }
   if (index < list.length){
     sql = sql.replace('{lng}',list[index].lng).replace('{lat}',list[index].lat);
-    //console.log(list[index],sql);
     client.query( sql , function(err, results){
         if (err){
           callback(err, null);
@@ -205,7 +203,6 @@ select i, array_agg(dist) as arow from (
             insert = insert.replace('{x}',results.rows[0].lat);
             insert = insert.replace('{session}',sessionkey);
             client.query( insert , function(err, results){
-              //console.log(err, results);
               self._tsp_fill_ids(sessionkey,list,index+1,callback);
             })
           }else{
@@ -222,11 +219,9 @@ Router.prototype.routeList = function(list,callback,index){
   var self = this;
 
   if (typeof index === 'undefined'){
-    console.log(list);
     list[0].len=0;
     index = 1;
   }
-  console.log(index);
   if (index < list.length){
     self.route(list[index-1].lng,list[index-1].lat,list[index].lng,list[index].lat,function(err,results){
       if (err){
@@ -259,7 +254,6 @@ Router.prototype.route = function(lng_from,lat_from,lng_to,lat_to,callback){
                .replace('{lat_from}',lat_from)
                .replace('{lng_to}',lng_to)
                .replace('{lat_to}',lat_to);
-    console.log(sql);
     client.query( sql , function(err, results){
 
         if (err){
