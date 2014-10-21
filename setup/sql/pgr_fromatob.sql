@@ -1,3 +1,4 @@
+
 CREATE OR REPLACE FUNCTION pgr_fromAtoB(
                 IN tbl varchar,
                 IN x1 double precision,
@@ -22,13 +23,15 @@ DECLARE
 
 BEGIN
   -- Find nearest node
-  EXECUTE 'SELECT id::integer FROM ways_vertices_pgr
-      ORDER BY the_geom <-> ST_GeometryFromText(''POINT('
+  EXECUTE 'SELECT ' || tbl || '_vertices_pgr.id::integer FROM ' || tbl || '_vertices_pgr join '
+  || quote_ident(tbl) || ' cw on ' || tbl || '_vertices_pgr.id=cw.gid
+      ORDER BY ' || tbl || '_vertices_pgr.the_geom <-> ST_GeometryFromText(''POINT('
       || x1 || ' ' || y1 || ')'',4326) LIMIT 1' INTO rec;
   source := rec.id;
 
-  EXECUTE 'SELECT id::integer FROM ways_vertices_pgr
-      ORDER BY the_geom <-> ST_GeometryFromText(''POINT('
+  EXECUTE 'SELECT ' || tbl || '_vertices_pgr.id::integer FROM ' || tbl || '_vertices_pgr join '
+  || quote_ident(tbl) || ' cw on ' || tbl || '_vertices_pgr.id=cw.gid
+      ORDER BY ' || tbl || '_vertices_pgr.the_geom <-> ST_GeometryFromText(''POINT('
       || x2 || ' ' || y2 || ')'',4326) LIMIT 1' INTO rec;
   target := rec.id;
 

@@ -9,6 +9,7 @@ AND c.name in (
   'bridleway',
   'footway',
   'byway',
+  'pedestrian',
   'cycleway',
   'living_street',
   'path',
