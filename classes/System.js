@@ -176,31 +176,74 @@ System.prototype.startHTTPService = function(){
 
   });
 
-  self.app.route('/route').post(function(req,res,next){
+  self.app.route('/route/tsp').post(function(req,res,next){
 
     var router = new Router(self);
     if (typeof req.body.type==='string'){
       if (req.body.type==='feet'){
-        router.tbl = 'feet_ways';
+        router.tbl = 'feetways';
       }
       if (req.body.type==='car'){
-        router.tbl = 'car_ways';
+        router.tbl = 'carways';
       }
       if (req.body.type==='cycle'){
-        router.tbl = 'cycle_ways';
+        router.tbl = 'cycleways';
       }
     }
-    router.routeAddress(
-      req.body.from_city,req.body.from_street,
-      req.body.to_city,req.body.to_street
-      ,function(err,result){
+
+
+    router.tsp(JSON.parse(req.body.list),function(err,result){
       if (err){
         res.json(err);
       }else{
-        res.json(result);
+        router.routeList(result,function(err,result2){
+          if (err){
+            res.json(err);
+          }else{
+            res.json(result2);
+          }
+        });
+        //res.json(result);
       }
     });
 
+  });
+
+  self.app.route('/route').post(function(req,res,next){
+
+    var router = new Router(self);
+
+    if (typeof req.body.type==='string'){
+      if (req.body.type==='feet'){
+        router.tbl = 'feetways';
+      }
+      if (req.body.type==='car'){
+        router.tbl = 'carways';
+      }
+      if (req.body.type==='cycle'){
+        router.tbl = 'cycleways';
+      }
+    }
+    if (typeof req.body.list==='string'){
+      router.routeList(JSON.parse(req.body.list),function(err,result){
+        if (err){
+          res.json(err);
+        }else{
+          res.json(result);
+        }
+      });
+    }else{
+      router.routeAddress(
+        req.body.from_city,req.body.from_street,
+        req.body.to_city,req.body.to_street
+        ,function(err,result){
+        if (err){
+          res.json(err);
+        }else{
+          res.json(result);
+        }
+      });
+    }
   });
 
   self.app.route('/live/:style/:zoom/:x/:y.png').get(function(req,res,next){
@@ -252,6 +295,7 @@ System.prototype.startHTTPService = function(){
       this.config.https.port = 443;
     }
     https.createServer(credentials, this.app).listen(this.config.https.port);
+    system.logger.log('info','service is started at port '+this.config.https.port);
   }
 
 
