@@ -349,9 +349,13 @@ System.prototype.startHTTPService = function(){
         this.config.https.timeout = 300000;
       }
       server_https = https.createServer(credentials, this.app).listen(this.config.https.port);
+      try{
       server_https.setTimeout(this.config.https.timeout,function(){
         system.logger.log('info','timeout');
       });
+    }catch(e){
+      
+    }
       system.logger.log('info','service is started at port '+this.config.https.port);
     }
 
