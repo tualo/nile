@@ -129,7 +129,9 @@ System.prototype.disconnect = function(callback){
 }
 
 System.prototype.startHTTPService = function(){
-  var self = this;
+  var self = this,
+      server_https,
+      server_http;
   //self.logger.log('debug','starting service');
 
   self.app = express();
@@ -346,8 +348,8 @@ System.prototype.startHTTPService = function(){
       if (typeof this.config.https.timeout == 'undefined'){
         this.config.https.timeout = 300000;
       }
-      server = https.createServer(credentials, this.app).listen(this.config.https.port);
-      server.setTimeout(this.config.https.timeout,function(){
+      server_https = https.createServer(credentials, this.app).listen(this.config.https.port);
+      server_https.setTimeout(this.config.https.timeout,function(){
         system.logger.log('info','timeout');
       });
       system.logger.log('info','service is started at port '+this.config.https.port);
@@ -361,8 +363,8 @@ System.prototype.startHTTPService = function(){
       if (typeof this.config.http.timeout == 'undefined'){
         this.config.http.timeout = 300000;
       }
-      server = http.createServer(this.app).listen(this.config.http.port);
-      server.setTimeout(this.config.http.timeout,function(){
+      server_http = http.createServer(this.app).listen(this.config.http.port);
+      server_http.setTimeout(this.config.http.timeout,function(){
         system.logger.log('info','timeout');
       });
       system.logger.log('info','service is started at port '+this.config.http.port);
