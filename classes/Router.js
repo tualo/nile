@@ -111,12 +111,17 @@ Router.prototype.tsp = function(list,callback){
       n=0;
 
   self._tsp_fill_ids(sessionkey,list,0,function(err,new_list){
-
+    console.log('tsp','list filled',new_list.length);
     if (err){
+      console.log('tsp',err);
+
       callback(err);
     }else{
+      console.log('tsp','query routes');
     sql = 'SELECT * from pgr_tsp(\'SELECT distinct id, x, y  FROM tsp_vertex_table where session = '+sessionkey+' \','+new_list[0].id+')';
     client.query( sql , function(err, results){
+      //console.log('tsp','routes error',err,results);
+
       if (results.rows.length>0){
         m = results.rows.length;
         for(i=0;i<m;i++){
