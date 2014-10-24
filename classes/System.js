@@ -148,8 +148,8 @@ System.prototype.startHTTPService = function(){
     next();
   });
 
-  self.app.use(bodyparser.urlencoded({ extended: false }));
-  self.app.use(bodyparser.json());
+  self.app.use(bodyparser.urlencoded({{limit: '50mb', extended: false }));
+  self.app.use(bodyparser.json({limit: '50mb'}));
 
   self.app.route('/').get(function(req,res,next){
     return res.render('index',{});
@@ -354,7 +354,7 @@ System.prototype.startHTTPService = function(){
         system.logger.log('info','timeout');
       });
     }catch(e){
-      
+
     }
       system.logger.log('info','service is started at port '+this.config.https.port);
     }
