@@ -111,7 +111,7 @@ Router.prototype.tsp = function(list,callback){
       n=0;
 
   self._tsp_fill_ids(sessionkey,list,0,function(err,new_list){
-    console.log('tsp','list filled',new_list.length);
+    
     if (err){
       console.log('tsp',err);
 
@@ -196,6 +196,7 @@ select i, array_agg(dist) as arow from (
     client.query( sql , function(err, results){
         if (err){
           callback(err, null);
+          //self._tsp_fill_ids(sessionkey,list,index+1,callback);
         }else{
           if (results.rows.length===1){
             if (typeof self.indexMap[results.rows[0].id]==='undefined'){
