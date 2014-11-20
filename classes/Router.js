@@ -121,34 +121,36 @@ Router.prototype.tsp = function(list,callback){
     sql = 'SELECT * from pgr_tsp(\'SELECT distinct id, x, y  FROM tsp_vertex_table where session = '+sessionkey+' \','+new_list[0].id+')';
     client.query( sql , function(err, results){
       //console.log('tsp','routes error',err,results);
-
-      if (results.rows.length>0){
-        m = results.rows.length;
-        for(i=0;i<m;i++){
-          l = self.indexMap[results.rows[i].id2];
-          n = l.length;
-          for (j=0;j<n;j++){
-            new_list[l[j]].seq = results.rows[i].seq;
-          }
-        }
-
-        //keysSorted = Object.keys(new_list).sort(function(a,b){return new_list[a]-new_list[b]})
-
-        //new_list.sort(function(a, b) {return a[1] - b[1]})
-
-        callback(err, self.sortListBy(new_list,'seq') );
-
-        //SELECT dmatrix, ids from pgr_makeDistanceMatrix('SELECT id, x, y FROM tsp_vertex_table');
-        client.query( 'delete from tsp_vertex_table where session =  '+sessionkey+'  ' , function(err, results){
-        });
-
+      if (err){
+        callback(err);
       }else{
-        callback("no result");
-        //SELECT dmatrix, ids from pgr_makeDistanceMatrix('SELECT id, x, y FROM tsp_vertex_table');
-        //client.query( 'delete from tsp_vertex_table where session =  '+sessionkey+'  ' , function(err, results){
-        //});
-      }
+        if (results.rows.length>0){
+          m = results.rows.length;
+          for(i=0;i<m;i++){
+            l = self.indexMap[results.rows[i].id2];
+            n = l.length;
+            for (j=0;j<n;j++){
+              new_list[l[j]].seq = results.rows[i].seq;
+            }
+          }
 
+          //keysSorted = Object.keys(new_list).sort(function(a,b){return new_list[a]-new_list[b]})
+
+          //new_list.sort(function(a, b) {return a[1] - b[1]})
+
+          callback(err, self.sortListBy(new_list,'seq') );
+
+          //SELECT dmatrix, ids from pgr_makeDistanceMatrix('SELECT id, x, y FROM tsp_vertex_table');
+          client.query( 'delete from tsp_vertex_table where session =  '+sessionkey+'  ' , function(err, results){
+          });
+
+        }else{
+          callback("no result");
+          //SELECT dmatrix, ids from pgr_makeDistanceMatrix('SELECT id, x, y FROM tsp_vertex_table');
+          //client.query( 'delete from tsp_vertex_table where session =  '+sessionkey+'  ' , function(err, results){
+          //});
+        }
+      }
     })
   }
     // 'SELECT seq, id1, id2, round(cost::numeric, 2) AS cost FROM pgr_tsp('SELECT id, x, y FROM tsp_vertex_tabl',42673) '
