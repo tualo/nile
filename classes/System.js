@@ -136,7 +136,18 @@ System.prototype.startHTTPService = function(){
 
   self.app = express();
 
-  self.app.use(timeout('15000s'));
+if (typeof this.config.http === 'object'){
+  if (typeof this.config.http.timeout === 'number'){
+    //this.config.http.timeout = 600000;
+    self.app.use(timeout(this.config.http.timeout+'s'));
+  }
+}else if (typeof this.config.https === 'object'){
+  if (typeof this.config.https.timeout === 'number'){
+    //this.config.http.timeout = 600000;
+    self.app.use(timeout(this.config.https.timeout+'s'));
+  }
+}
+
 
   self.app.use(express.static(path.join(__dirname ,'..', 'public')));
   self.app.set('views', path.join(__dirname ,'..', 'template'));
@@ -215,7 +226,6 @@ System.prototype.startHTTPService = function(){
   });
 
   self.app.route('/route/tsp').post(function(req,res,next){
-    console.log(req);
 
     var router = new Router(self);
     if (typeof req.body.type==='string'){
@@ -230,30 +240,18 @@ System.prototype.startHTTPService = function(){
       }
     }
 
-    console.log("list length", ( JSON.parse(req.body.list) ).length );
     router.tsp(JSON.parse(req.body.list),function(err,result){
       if (err){
         res.json(err);
       }else{
-        console.log('tsp end',result.length);
 
         router.routeList(result,function(err,result2){
-          console.log(err,result2);
-          console.log('success');
           if (err){
             res.json(err);
           }else{
-            console.log('success');
-            console.log('success****', ( JSON.stringify(result2,null,1) ).length );
-            //res.send( JSON.stringify(result2,null,1) );
-
-            //res.end();
             res.json(result2);
-            console.log('***success');
-
           }
         });
-        //res.json(result);
       }
     });
 
@@ -346,7 +344,7 @@ System.prototype.startHTTPService = function(){
       }
 
       if (typeof this.config.https.timeout == 'undefined'){
-        this.config.https.timeout = 300000;
+        this.config.https.timeout = 600000;
       }
       server_https = https.createServer(credentials, this.app).listen(this.config.https.port);
       try{
@@ -365,7 +363,7 @@ System.prototype.startHTTPService = function(){
         this.config.http.port = 80;
       }
       if (typeof this.config.http.timeout == 'undefined'){
-        this.config.http.timeout = 300000;
+        this.config.http.timeout = 600000;
       }
       server_http = http.createServer(this.app).listen(this.config.http.port);
       server_http.setTimeout(this.config.http.timeout,function(){
