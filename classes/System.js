@@ -340,7 +340,7 @@ if (typeof this.config.http === 'object'){
       if (typeof this.config.https.ca_files !== "undefined"){
 
         credentials.ca = (function(files) {
-          var _i, _len, _results;
+          var _i, _len, _results, file;
 
           _results = [];
           for (_i = 0, _len = files.length; _i < _len; _i++) {
