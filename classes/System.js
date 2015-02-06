@@ -345,14 +345,13 @@ if (typeof this.config.http === 'object'){
           _results = [];
           for (_i = 0, _len = files.length; _i < _len; _i++) {
             file = files[_i];
-            _results.push(fs.readFileSync(file));
+            _results.push( (fs.readFileSync(file)).toString() );
           }
           return _results;
 
         })(this.config.https.ca_files);
       }
-      console.log(credentials.ca);
-
+      
       if (typeof this.config.https.ciphers === 'string'){
         credentials.ciphers = this.config.https.ciphers;
       }
