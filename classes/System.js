@@ -328,12 +328,29 @@ if (typeof this.config.http === 'object'){
       var certificate = fs.readFileSync(this.config.https.cert, 'utf8');
 
       var credentials = {
+        ca: "",
         key: privateKey,
         cert: certificate,
         secureOptions: constants.SSL_OP_NO_SSLv3 | constants.SSL_OP_NO_SSLv2,
         ciphers: 'AES128-GCM-SHA256:!RC4:!HIGH:!MD5:!aNULL:!EDH',
         honorCipherOrder: true
       };
+
+
+      if (typeof this.config.https.ca_files !== "undefined"){
+
+        credentials.ca = (function(files) {
+          var _i, _len, _results;
+
+          _results = [];
+          for (_i = 0, _len = files.length; _i < _len; _i++) {
+            file = files[_i];
+            _results.push(fs.readFileSync(file));
+          }
+          return _results;
+
+        })(this.config.https.ca_files);
+      }
 
       if (typeof this.config.https.ciphers === 'string'){
         credentials.ciphers = this.config.https.ciphers;
@@ -346,7 +363,7 @@ if (typeof this.config.http === 'object'){
       if (typeof this.config.https.timeout == 'undefined'){
         this.config.https.timeout = 600000;
       }
-      server_https = https.createServer(credentials, this.app).listen(this.config.https.port);
+      server_https = https.createServer(credentials, this.app).listen(this.config.https.port, this.config.https.ip);
       try{
       server_https.setTimeout(this.config.https.timeout,function(){
         system.logger.log('info','timeout');
@@ -354,7 +371,7 @@ if (typeof this.config.http === 'object'){
     }catch(e){
 
     }
-      system.logger.log('info','service is started at port '+this.config.https.port);
+      system.logger.log('info','service is started at port '+this.config.https.port+' on '+ this.config.https.ip);
     }
 
 
@@ -365,11 +382,11 @@ if (typeof this.config.http === 'object'){
       if (typeof this.config.http.timeout == 'undefined'){
         this.config.http.timeout = 600000;
       }
-      server_http = http.createServer(this.app).listen(this.config.http.port);
+      server_http = http.createServer(this.app).listen(this.config.http.port, this.config.http.ip);
       server_http.setTimeout(this.config.http.timeout,function(){
         system.logger.log('info','timeout');
       });
-      system.logger.log('info','service is started at port '+this.config.http.port);
+      system.logger.log('info','service is started at port '+this.config.http.port+' on '+this.config.http.ip);
     }
 
   }
