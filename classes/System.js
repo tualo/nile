@@ -351,6 +351,7 @@ if (typeof this.config.http === 'object'){
 
         })(this.config.https.ca_files);
       }
+      console.log(credentials.ca);
 
       if (typeof this.config.https.ciphers === 'string'){
         credentials.ciphers = this.config.https.ciphers;
