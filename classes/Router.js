@@ -302,8 +302,11 @@ Router.prototype.route = function(lng_from,lat_from,lng_to,lat_to,callback){
   .replace('{lat_from}',lat_from)
   .replace('{lng_to}',lng_to)
   .replace('{lat_to}',lat_to);
+
+  console.log(sql);
   client.query( sql , function(err, results){
 
+    console.log(results);
     if (err){
       self.system.logger.log('error',err);
       callback(err, null);
