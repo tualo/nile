@@ -311,6 +311,8 @@ Router.prototype.route = function(lng_from,lat_from,lng_to,lat_to,callback){
         if(results.rows[0].len>50){
           console.log('LONG TURN');
           console.log(sql);
+
+          results.rows[0].len = 0;
         }
       }
 
