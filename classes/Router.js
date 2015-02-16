@@ -272,6 +272,7 @@ Router.prototype.routeList = function(list,callback,index){
         //console.log(results);
 
         if (results.length>0){
+
           list[index].len = results[0].len;
           list[index].way = results[0].way;
         }else{
@@ -306,6 +307,13 @@ Router.prototype.route = function(lng_from,lat_from,lng_to,lat_to,callback){
       self.system.logger.log('error',err);
       callback(err, null);
     }else{
+      if (results.rows.length>0){
+        if(results.rows[0].len>50){
+          console.log('LONG TURN');
+          console.log(sql);
+        }
+      }
+
       callback(false, results.rows);
     }
   })
