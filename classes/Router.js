@@ -268,11 +268,12 @@ Router.prototype.routeList = function(list,callback,index){
     index = 1;
   }
   if (index < list.length){
+    console.log("ROUTE",list[index]);
     self.route(list[index-1].lng,list[index-1].lat,list[index].lng,list[index].lat,function(err,results){
       if (err){
         callback(err);
       }else{
-        console.log(results);
+        //console.log(results);
 
         if (results.length>0){
           list[index].len = results[0].len;
