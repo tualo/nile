@@ -150,6 +150,8 @@ $BODY$
 LANGUAGE 'plpgsql' VOLATILE STRICT;
 
 
+pgr_fromAtoB
+
 
 SELECT
 gid,

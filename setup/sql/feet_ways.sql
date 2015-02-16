@@ -13,7 +13,7 @@ AND c.name in (
   'path',
   'residential',
   'track',
-  'service'
+  'service',
   'steps',
   'grade1',
   'grade2',

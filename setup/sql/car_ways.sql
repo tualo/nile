@@ -1,4 +1,4 @@
-create table car_ways as
+create table carways as
 SELECT
   ways.*
 FROM ways, classes c
@@ -12,7 +12,7 @@ AND c.name in (
   'motorway',
   'motorway_junction',
   'motorway_link',
-  'primary'
+  'primary',
   'primary_link',
   'secondary',
   'secondary_link',

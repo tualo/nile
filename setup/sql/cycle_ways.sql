@@ -14,14 +14,14 @@ AND c.name in (
   'living_street',
   'path',
   'residential',
-  'primary'
+  'primary',
   'primary_link',
   'secondary',
   'secondary_link',
   'tertiary',
   'tertiary_link',
   'track',
-  'service'
+  'service',
   'steps',
   'grade1',
   'grade2',

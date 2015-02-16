@@ -269,6 +269,8 @@ Router.prototype.routeList = function(list,callback,index){
   }
   if (index < list.length){
     console.log("ROUTE",list[index]);
+
+    if
     self.route(list[index-1].lng,list[index-1].lat,list[index].lng,list[index].lat,function(err,results){
       if (err){
         callback(err);
@@ -304,10 +306,8 @@ Router.prototype.route = function(lng_from,lat_from,lng_to,lat_to,callback){
   .replace('{lng_to}',lng_to)
   .replace('{lat_to}',lat_to);
 
-  console.log(sql);
   client.query( sql , function(err, results){
 
-    console.log(results);
     if (err){
       self.system.logger.log('error',err);
       callback(err, null);
