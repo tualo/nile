@@ -231,6 +231,13 @@ if (typeof this.config.http === 'object'){
   router.tbl = 'carways';
   router.tsp(t,function(err,result){
     console.log(result);
+    router.routeList(result,function(err,result2){
+      if (err){
+
+      }else{
+        console.log(result2);
+      }
+    });
   });
 
   self.app.route('/route/tsp').post(function(req,res,next){
