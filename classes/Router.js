@@ -130,6 +130,7 @@ Router.prototype.tsp = function(list,callback){
       sql = 'SELECT * from pgr_tsp(\'SELECT distinct id, x, y  '+
       'FROM tsp_vertex_table where session = '+sessionkey+' \','+start+','+stop+')';
       console.log('tsp',sql);
+
       client.query( sql , function(err, results){
         if (err){
           callback(err);
@@ -271,12 +272,15 @@ Router.prototype.routeList = function(list,callback,index){
       if (err){
         callback(err);
       }else{
+        console.log(results);
+
         if (results.length>0){
           list[index].len = results[0].len;
           list[index].way = results[0].way;
         }else{
           list[index].len = 0;
         }
+
         self.routeList(list,callback,index + 1);
       }
     })
