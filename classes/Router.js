@@ -308,10 +308,9 @@ Router.prototype.route = function(lng_from,lat_from,lng_to,lat_to,callback){
       callback(err, null);
     }else{
       if (results.rows.length>0){
-        if(results.rows[0].len>50){
+        if(results.rows[0].len>500){
           console.log('LONG TURN');
           console.log(sql);
-
           results.rows[0].len = 0;
         }
       }
