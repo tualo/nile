@@ -268,9 +268,6 @@ Router.prototype.routeList = function(list,callback,index){
     index = 1;
   }
   if (index < list.length){
-    console.log("ROUTE",list[index]);
-
-    if
     self.route(list[index-1].lng,list[index-1].lat,list[index].lng,list[index].lat,function(err,results){
       if (err){
         callback(err);
