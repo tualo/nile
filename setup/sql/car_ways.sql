@@ -1,4 +1,4 @@
-create table carways as
+create table car_ways as
 SELECT
   ways.*
 FROM ways, classes c
@@ -22,3 +22,4 @@ AND c.name in (
   'trunk_link',
   'unclassified'
 );
+select pgr_createVerticesTable('car_ways');

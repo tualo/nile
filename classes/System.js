@@ -232,13 +232,13 @@ if (typeof this.config.http === 'object'){
     var router = new Router(self);
     if (typeof req.body.type==='string'){
       if (req.body.type==='feet'){
-        router.tbl = 'feetways';
+        router.tbl = 'feet_ways';
       }
       if (req.body.type==='car'){
-        router.tbl = 'carways';
+        router.tbl = 'car_ways';
       }
       if (req.body.type==='cycle'){
-        router.tbl = 'cycleways';
+        router.tbl = 'cycle_ways';
       }
     }
 
@@ -265,13 +265,13 @@ if (typeof this.config.http === 'object'){
 
     if (typeof req.body.type==='string'){
       if (req.body.type==='feet'){
-        router.tbl = 'feetways';
+        router.tbl = 'feet_ways';
       }
       if (req.body.type==='car'){
-        router.tbl = 'carways';
+        router.tbl = 'car_ways';
       }
       if (req.body.type==='cycle'){
-        router.tbl = 'cycleways';
+        router.tbl = 'cycle_ways';
       }
     }
     if (typeof req.body.list==='string'){

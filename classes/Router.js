@@ -8,7 +8,7 @@ var Router = function(system,debug){
     self.debug = debug;
   }
   self.system = system;
-  self.tbl = 'carways';
+  self.tbl = 'car_ways';
 }
 
 Router.prototype.routeAddress = function(city_from,street_from,city_to,street_to,callback){
@@ -118,7 +118,7 @@ Router.prototype.tsp = function(list,callback){
       callback(err);
     }else{
 
-      console.log('tsp',new_list,start,stop);
+
       if (typeof start==='undefined'){
         start = new_list[0].id;
       }
@@ -129,7 +129,7 @@ Router.prototype.tsp = function(list,callback){
       }
       sql = 'SELECT * from pgr_tsp(\'SELECT distinct id, x, y  '+
       'FROM tsp_vertex_table where session = '+sessionkey+' \','+start+','+stop+')';
-      console.log('tsp',sql);
+
 
       client.query( sql , function(err, results){
         if (err){
@@ -150,7 +150,6 @@ Router.prototype.tsp = function(list,callback){
               new_list[ self.indexMap[-999999][0] ].seq = m;
             }
 
-            console.log('tsp',results,new_list);
 
             callback(err, self.sortListBy(new_list,'seq') );
 
@@ -224,7 +223,6 @@ if (index < list.length){
           if (list[index].refid == 'STARTPOINT' ){
             if ( typeof start === 'undefined' ){
               start = results.rows[0].id;
-              console.log('STARTPOINT',start);
             }
           }
 
@@ -233,7 +231,6 @@ if (index < list.length){
             if ( typeof stop === 'undefined' ){
 
               stop = results.rows[0].id;
-              console.log('STOPPOINT',stop);
               if (stop === start){
                 self.indexMap[-999999]=[];
                 self.indexMap[-999999].push(index);

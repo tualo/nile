@@ -21,3 +21,5 @@ AND c.name in (
   'grade4',
   'grade5'
 );
+
+select pgr_createVerticesTable('feet_ways');
