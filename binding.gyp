@@ -66,6 +66,23 @@
               'CLANG_CXX_LANGUAGE_STANDARD':'c++11',
               'GCC_VERSION': 'com.apple.compilers.llvm.clang.1_0'
             }
+          }],
+          ['OS=="linux"', {
+            'cflags_cc!': [
+                '-fno-rtti',
+                '-fno-exceptions',
+                '-Wno-unused-variable',
+                '-Wno-shadow'],
+            'cflags_cc' : [
+              '<!@(mapnik-config --cflags)'
+            ],
+            'libraries':[
+              '<!@(mapnik-config --libs)',
+              '-lmapnik-wkt',
+              '-lmapnik-json',
+              '<!@(mapnik-config --ldflags)',
+              '-lprotobuf-lite',
+            ]
           }]
       ],
 
