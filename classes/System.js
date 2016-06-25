@@ -311,6 +311,14 @@ if (typeof this.config.http === 'object'){
     });
 
     self.app.route('/-/:style/:zoom/:x/:y.png').get(function(req,res,next){
+      var t = new Tile();
+      t.z = req.params.zoom;
+      t.x = req.params.x;
+      t.y = req.params.y;
+      t._updateBBox();
+      console.log(t.getDatabaseQuery());
+
+
 
       req.params.live = false;
       self.getTileImage(req,function(error,fileName){
@@ -463,6 +471,7 @@ if (typeof this.config.http === 'object'){
     }else{
 
       fs.exists(path.join(json_path,coords.y+'.geojson'),function(exists){
+
         if (exists  && ( !request.params.live ) ){
           fs.readFile(path.join(json_path,coords.y+'.geojson'),function(err,data){
             if (err){

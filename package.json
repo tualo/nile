@@ -35,20 +35,39 @@
   },
   "readmeFilename": "README.md",
   "dependencies": {
-    "colors": "0.6.2",
-    "commander": "2.0.0",
-    "express": "4.8.7",
-    "mkdirp": "0.5.0",
+    "big-integer": "^1.6.15",
+    "body-parser": "^1.13.2",
+    "canvas": "*",
+    "carto": "^0.14.1",
+    "colors": "*",
+    "commander": "*",
+    "express": "*",
+    "geocoords": "*",
+    "glob": "*",
+    "jade": "*",
+    "mapnik-pool": "^0.1.2",
+    "md5": "^2.1.0",
+    "mkdirp": "*",
+    "nan": "^2.2.0",
     "nile-style": "*",
-    "body-parser": "1.9.0",
+    "node-gyp": "^3.2.1",
+    "node-sass": "*",
     "pg": "3.4.1",
-    "jade": "1.6.0",
-    "glob": "*"
+    "request": "*",
+    "sphericalmercator": "^1.0.4",
+    "tualo-commander": "*",
+    "tualo-template": "*",
+    "connect-timeout": "*"
   },
   "devDependencies": {
-    "grunt": "~0.4.2",
+    "grunt": "*",
     "grunt-contrib-jshint": "~0.6.3",
     "grunt-contrib-nodeunit": "~0.2.0",
-    "grunt-contrib-uglify": "~0.2.2"
+    "grunt-contrib-uglify": "~0.2.2",
+    "grunt-contrib-coffee": "*",
+    "grunt-cli": "*",
+    "grunt-shell": "*",
+    "grunt-coffeelint": "*",
+    "coffee-script": "~1.9.0"
   }
 }

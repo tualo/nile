@@ -161,6 +161,7 @@ Tile.prototype.__getDatabaseQuery = function(){
   as = this.as,
   bbox = this.bbox;
 
+
   var tolerance = (bbox[2]-bbox[0]);
   var granularity  = 10000;
   var cond      = "";

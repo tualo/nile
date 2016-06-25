@@ -1,0 +1,13 @@
+$font-stack:    Helvetica, sans-serif;
+$primary-color: #333;
+$fail-color: #f33;
+
+.highway{
+  color: $fail-color;
+  .service {
+    color: white;
+  }
+  .primary {
+    color: yellow;
+  }
+}

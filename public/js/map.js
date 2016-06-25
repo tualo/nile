@@ -106,8 +106,9 @@ function fillLayerList (layers){
       visible: layers[i].visible,
       source: new ol.source.XYZ(
         {
-          url: './-/'+layers[i].style+'/{z}/{x}/{y}.png',
-          //tilePixelRatio: 2, // THIS IS IMPORTANT
+          //url: './-/'+layers[i].style+'/{z}/{x}/{y}.png',
+          url: './tiles/{z}/{x}/{y}.png',
+          tilePixelRatio: 2, // THIS IS IMPORTANT
           attributions: [
             new ol.Attribution({
               html: layers[i].title+' Tiles &copy; <a target="_blank" href="http://www.tualo.de/">tualo</a>'
@@ -151,9 +152,10 @@ var map = new ol.Map({
       new ol.control.ScaleLine(),
       new ol.control.MousePosition(),
       //new ol.control.Control({element: document.getElementById('control')}),
-      new LayerSwitcher({
+      /*new LayerSwitcher({
         autoHide: false
       }),
+      */
       new ZoomDisplay({
         autoHide: false
       })
@@ -166,7 +168,7 @@ var map = new ol.Map({
     projection: 'EPSG:3857',
     zoom: 16,
     maxZoom: 23,
-    minZoom: 5
+    minZoom: 3
   })
 
 });

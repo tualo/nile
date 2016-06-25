@@ -4,3 +4,8 @@
 public/map/*
 .DS_Store
 styles/instructions/*
+tile-cache
+old.*
+build
+autom4te*
+nominatim.so

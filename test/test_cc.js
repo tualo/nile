@@ -1,0 +1,11 @@
+var addon =require('../build/Release/tile');
+console.log(addon);
+var o = new addon.Tile(512,512);
+console.log(o);
+console.log(o.status());
+console.log(o.dataSourcePath("/usr/local/lib/mapnik/input/"));
+console.log(o.fontPath("/Users/thomashoffmann/Documents/Projects/node/tualo-carto/fonts"));
+console.log(o.loadMap("/Users/thomashoffmann/Documents/Projects/node/tualo-carto/carto.xml"));
+console.log(o.getTile(14,8691,5485,"test5.png"));
+console.log(o.getTile(14,8691,5484,"test4.png"));
+console.log(o.getTile(14,8691,5486,"test.png"));
