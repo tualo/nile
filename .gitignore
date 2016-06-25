@@ -8,4 +8,5 @@ tile-cache
 old.*
 build
 autom4te*
-nominatim.so
+*.o
+*.so
